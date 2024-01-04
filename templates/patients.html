@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patients Information</title>
+</head>
+<body>
+    <h1>Patients Information</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Address</th>
+            </tr>
+        </thead>
+        <tbody id="patients-table">
+            <!-- Patient data will be populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        // Fetch patients data from your Flask backend
+        fetch('/patients')
+            .then(response => response.json())
+            .then(data => {
+                const patientsTable = document.getElementById('patients-table');
+
+                // Loop through the retrieved patients and create table rows
+                data.patients.forEach(patient => {
+                    const row = document.createElement('tr');
+
+                    const idCell = document.createElement('td');
+                    idCell.textContent = patient.Patient_ID;
+                    row.appendChild(idCell);
+
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = patient.Name;
+                    row.appendChild(nameCell);
+
+                    const ageCell = document.createElement('td');
+                    ageCell.textContent = patient.Age;
+                    row.appendChild(ageCell);
+
+                    const addressCell = document.createElement('td');
+                    addressCell.textContent = patient.Address;
+                    row.appendChild(addressCell);
+
+                    patientsTable.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+</body>
+</html>

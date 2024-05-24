@@ -1,5 +1,5 @@
 import React from 'react'
-import { Navbar, Container, Nav, NavDropdown, Button } from 'react-bootstrap'
+import { Navbar, Container, Nav, NavDropdown, Button, Form } from 'react-bootstrap'
 
 function NavBar() {
     return (
@@ -24,16 +24,18 @@ function NavBar() {
                         </NavDropdown>
                     </Nav>
                 </Navbar.Collapse>
-                <Button onClick={() => {
-                    if (document.documentElement.getAttribute('data-bs-theme') == 'dark') {
+                <Form.Switch label='Dark mode'
+                onChange={(e: any) => {
+                    // if(document.documentElement.getAttribute('data-bs-theme') == 'dark') {
+                    if(e.target.checked == false) {
                         document.documentElement.setAttribute('data-bs-theme', 'light')
                     }
                     else {
                         document.documentElement.setAttribute('data-bs-theme', 'dark')
                     }
                 }}>
-                    Switch theme
-                </Button>
+                    
+                </Form.Switch>
             </Container>
         </Navbar>
     )

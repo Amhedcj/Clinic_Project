@@ -7,6 +7,7 @@ import App from './App';
 import AdmissionForm from './components/forms/AdmissionForm';
 import NavBar from './components/NavBar';
 import { Container } from 'react-bootstrap';
+import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import "bootstrap/dist/js/bootstrap.js";
 

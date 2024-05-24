@@ -1,0 +1,191 @@
+
+
+### HTML Form for Capturing Patient Information
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Patient Information Form</title>
+    <script>
+        async function submitPatientForm(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const patientData = {};
+            formData.forEach((value, key) => {
+                patientData[key] = value;
+            });
+            const response = await fetch('/patients', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(patientData)
+            });
+            const result = await response.json();
+            alert('Patient data submitted: ' + JSON.stringify(result));
+        }
+    </script>
+</head>
+<body>
+    <h1>Patient Information Form</h1>
+    <form onsubmit="submitPatientForm(event)">
+        <label for="patient_id">Patient ID:</label>
+        <input type="number" id="patient_id" name="patient_id" required><br>
+
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" required><br>
+
+        <label for="allergies">Allergies:</label>
+        <input type="text" id="allergies" name="allergies" required><br>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+```
+
+### HTML Form for Capturing Doctor Notes
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Doctor Notes Form</title>
+    <script>
+        async function submitNotesForm(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const notesData = {};
+            formData.forEach((value, key) => {
+                notesData[key] = value;
+            });
+            const response = await fetch('/patientprogressnotes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(notesData)
+            });
+            const result = await response.json();
+            alert('Doctor notes submitted: ' + JSON.stringify(result));
+        }
+    </script>
+</head>
+<body>
+    <h1>Doctor Notes Form</h1>
+    <form onsubmit="submitNotesForm(event)">
+        <label for="progress_note_id">Progress Note ID:</label>
+        <input type="number" id="progress_note_id" name="progress_note_id" required><br>
+
+        <label for="patient_id">Patient ID:</label>
+        <input type="number" id="patient_id" name="patient_id" required><br>
+
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required><br>
+
+        <label for="time">Time:</label>
+        <input type="time" id="time" name="time" required><br>
+
+        <label for="notes">Notes:</label>
+        <textarea id="notes" name="notes" required></textarea><br>
+
+        <label for="nurse_signature">Nurse Signature:</label>
+        <input type="text" id="nurse_signature" name="nurse_signature" required><br>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+```
+
+### Setting Up the Flask Server to Serve Static Files
+
+To serve these HTML files, place them in a `templates` directory within your Flask project. Modify your Flask application to serve these static files and ensure it is capable of handling form submissions.
+
+### Updated Flask Application
+
+```python
+from flask import Flask, request, jsonify, render_template
+import boto3
+
+app = Flask(__name__)
+
+# Initialize a session using Amazon DynamoDB
+dynamodb = boto3.resource('dynamodb', region_name='us-west-1')
+
+# Helper function to get table
+def get_table(table_name):
+    return dynamodb.Table(table_name)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/patient_form')
+def patient_form():
+    return render_template('patient_form.html')
+
+@app.route('/notes_form')
+def notes_form():
+    return render_template('notes_form.html')
+
+# Patients CRUD endpoints
+@app.route('/patients', methods=['POST'])
+def create_patient():
+    data = request.json
+    table = get_table('Patients')
+    response = table.put_item(Item=data)
+    return jsonify(response), 201
+
+@app.route('/patients/<int:patient_id>', methods=['GET'])
+def get_patient(patient_id):
+    table = get_table('Patients')
+    response = table.get_item(Key={'patient_id': patient_id})
+    return jsonify(response.get('Item')), 200
+
+@app.route('/patients/<int:patient_id>', methods=['PUT'])
+def update_patient(patient_id):
+    data = request.json
+    table = get_table('Patients')
+    update_expression = "SET " + ", ".join(f"{k} = :{k}" for k in data.keys())
+    expression_attribute_values = {f":{k}": v for k, v in data.items()}
+    response = table.update_item(
+        Key={'patient_id': patient_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values,
+        ReturnValues="UPDATED_NEW"
+    )
+    return jsonify(response), 200
+
+@app.route('/patients/<int:patient_id>', methods=['DELETE'])
+def delete_patient(patient_id):
+    table = get_table('Patients')
+    response = table.delete_item(Key={'patient_id': patient_id})
+    return jsonify(response), 204
+
+# Similar endpoints for other tables...
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+### Directory Structure
+
+Ensure your project directory is structured like this:
+
+```
+your_project/
+│
+├── app.py
+├── templates/
+│   ├── index.html
+│   ├── patient_form.html
+│   └── notes_form.html
+└── ...
+```
+
+With this setup, you can navigate to `/patient_form` or `/notes_form` to fill out and submit the forms. The JavaScript in each form will handle the submission to the Flask backend API, which will then interact with the DynamoDB tables.

@@ -1,0 +1,97 @@
+import React from 'react';
+import { Form, Col, Row, Container, Button } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+const AdmissionDischargeForm = () => {
+  return (
+    <Container>
+      <Form className="m-4">
+        <h3>ADMISSION AND DISCHARGE DAILY SHEET</h3>
+
+        <h4>Patient Admission Details</h4>
+        <Form.Group as={Row} controlId="patientName">
+          <Form.Label column sm={2}>Patient Name:</Form.Label>
+          <Col sm={10}>
+            <Form.Control type="text" placeholder="John Doe" />
+          </Col>
+        </Form.Group>
+
+        <Form.Group as={Row} controlId="date">
+          <Form.Label column sm={2}>Date:</Form.Label>
+          <Col sm={4}>
+            <Form.Control type="date" />
+          </Col>
+          <Form.Label column sm={2}>Allergies:</Form.Label>
+          <Col sm={4}>
+            <Form.Control type="text" placeholder="N/A" />
+          </Col>
+        </Form.Group>
+
+        <Form.Group as={Row} controlId="arrivalTime">
+          <Form.Label column sm={2}>Arrival Time:</Form.Label>
+          <Col sm={4}>
+            <Form.Control type="time" />
+          </Col>
+          <Form.Label column sm={2}>AM/PM:</Form.Label>
+          <Col sm={4}>
+            <Form.Control type="text" placeholder="AM/PM" />
+          </Col>
+        </Form.Group>
+
+        <Form.Group as={Row} controlId="modeOfArrival">
+          <Form.Label column sm={2}>Mode of Arrival:</Form.Label>
+          <Col sm={10}>
+            <Form.Check type="radio" label="Caregiver" name="modeOfArrival" inline />
+            <Form.Check type="radio" label="Transportation" name="modeOfArrival" inline />
+            <Form.Check type="radio" label="Ambulance" name="modeOfArrival" inline />
+          </Col>
+        </Form.Group>
+
+        <Form.Group as={Row} controlId="safetyMeasures">
+          <Form.Label column sm={2}>Safety Measures in Place:</Form.Label>
+          <Col sm={10}>
+            <Form.Check type="checkbox" label="Car Seat" inline />
+            <Form.Check type="checkbox" label="Seat Belt" inline />
+            <Form.Check type="checkbox" label="Wheelchair" inline />
+          </Col>
+        </Form.Group>
+
+        <Form.Group as={Row} controlId="patientStable">
+          <Form.Label column sm={2}>Patient Stable VS WNL:</Form.Label>
+          <Col sm={10}>
+            <Form.Check type="checkbox" label="G-Tube or Trach tube properly in place" inline />
+          </Col>
+        </Form.Group>
+
+        <Form.Group as={Row} controlId="generalAssessment">
+          <Form.Label column sm={2}>General Assessment (Head to Toe) Completed:</Form.Label>
+          <Col sm={10}>
+            <Form.Control type="text" placeholder="Completed" />
+          </Col>
+        </Form.Group>
+
+        <Form.Group as={Row} controlId="additionalComments">
+          <Form.Label column sm={2}>Additional Comments:</Form.Label>
+          <Col sm={10}>
+            <Form.Control as="textarea" rows={3} placeholder="Any additional comments or observations" />
+          </Col>
+        </Form.Group>
+
+        <Form.Group as={Row} controlId="nurseSign">
+          <Form.Label column sm={2}>Nurse Sign:</Form.Label>
+          <Col sm={10}>
+            <Form.Control type="text" placeholder="Nurse's Signature" />
+          </Col>
+        </Form.Group>
+
+        <Form.Group as={Row}>
+          <Col sm={{ span: 10, offset: 2 }}>
+            <Button type="submit">Submit</Button>
+          </Col>
+        </Form.Group>
+      </Form>
+    </Container>
+  );
+};
+
+export default AdmissionDischargeForm;

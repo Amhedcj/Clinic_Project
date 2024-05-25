@@ -1,9 +1,11 @@
 import Table from 'react-bootstrap/Table';
 import { Form, Button, Row, Col, Container, FloatingLabel, InputGroup, ListGroup } from 'react-bootstrap';
 import { useState } from 'react';
+import AdmissionData, { Procedure } from '../types/AdmissionData';
+import { setNestedState } from '../utils/utils';
 
-function ProceduresTable() {
-    const [data, setData] = useState([{ procedure: '0' as String }]);
+function ProceduresTable(props: any) {
+    const [procedures, setProcedures] = useState([new Procedure()] as Procedure[]);
 
     const removeAtAndCopy = (data: Array<any>, idx: Number) => {
         idx = Math.round(Number(idx));
@@ -20,6 +22,19 @@ function ProceduresTable() {
         return newData;
     };
 
+    const handleProcedureChange = (e: any, idx: number) => {
+        const { name, value, type, checked } = e.target;
+
+        const newProcedures = [...procedures];
+        const newProcedure = structuredClone(procedures[idx]);
+        newProcedures[idx] = newProcedure;
+
+        setNestedState(newProcedure, name, value);
+
+        setProcedures(newProcedures);
+        props.setFormProp('procedures', newProcedures);
+    };
+
     return (
         <>
             <Table striped bordered hover>
@@ -34,17 +49,15 @@ function ProceduresTable() {
                 </thead>
                 <tbody>
                     {
-                        data.map((user: any, index: number) => {
+                        (props.formData as AdmissionData).procedures.map((procedure: Procedure, index: number) => {
                             return (
                                 <tr>
-                                    <td><Form.Control type="time"></Form.Control></td>
-                                    <td><Form.Control type="text" value={`${data[index].procedure}`}
-                                    onChange={(e: any) => { const newData = [...data]; newData[index].procedure = e.target.value; setData(newData); }}
-                                    ></Form.Control></td>
+                                    <td><Form.Control type="time" name='time' value={procedure.time} onChange={e => handleProcedureChange(e, index)}></Form.Control></td>
+                                    <td><Form.Control type="text" name='procedure' value={procedure.procedure} onChange={e => handleProcedureChange(e, index)}></Form.Control></td>
                                     <td><Form.Control type="text"></Form.Control></td>
                                     <td><Form.Control type="text"></Form.Control></td>
                                     <td>
-                                        <Button onClick={()=>{ console.log(`rm idx: ${index}`); const newData = removeAtAndCopy(data, index); setData(newData); }}>-</Button>
+                                        <Button onClick={()=>{ console.log(`rm idx: ${index}`); const newData = removeAtAndCopy(procedures, index); setProcedures(newData); }}>-</Button>
                                     </td>
                                 </tr>
                             )
@@ -52,7 +65,7 @@ function ProceduresTable() {
                     }
                 </tbody>
             </Table>
-            <Button onClick={()=>{ console.log(data); setData([...data, { procedure: `${data.length}` }])}}>+</Button>
+            <Button onClick={()=>{ console.log(procedures); setProcedures([...procedures, new Procedure()]); props.setFormProp('procedures', procedures) }}>+</Button>
         </>
     );
 }

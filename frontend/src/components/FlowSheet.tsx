@@ -196,8 +196,12 @@ function FlowSheet(props: any) {
 
                         <tr>
                             <td>Activity</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
 
                     </>
@@ -206,53 +210,111 @@ function FlowSheet(props: any) {
                     <>
                         <tr>
                             <td>Effort</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>--Breath sounds</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>FIO2/LxM</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>SaO2</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <InputGroup as={Col} xs={6}>
+                                    <Form.Control type="number" min={96} max={102} name="flowSheet.skin.temperature" />
+                                    {/* Later can make this a button that changes and auto-converts the current value from the previous unit to the new unit and vice versa */}
+                                    <InputGroup.Text>%</InputGroup.Text>
+                                </InputGroup>
+                            </td>
+                            <td>
+                                <InputGroup as={Col} xs={6}>
+                                    <Form.Control type="number" min={96} max={102} name="flowSheet.skin.temperature" />
+                                    {/* Later can make this a button that changes and auto-converts the current value from the previous unit to the new unit and vice versa */}
+                                    <InputGroup.Text>%</InputGroup.Text>
+                                </InputGroup>
+                            </td>
                         </tr>
                         <tr>
                             <td>CARDIAC</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Heart sounds</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Rhythm</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Peripheral Pulse</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <InputGroup as={Col}>
+                                    <Form.Control type="number" />
+                                    <OverlayTrigger placement="auto" delay={{ show: 250, hide: 400 }} overlay={renderTooltip('Beats per minute')}>
+                                        <InputGroup.Text>BPM</InputGroup.Text>
+                                    </OverlayTrigger>
+                                </InputGroup>
+                            </td>
+                            <td>
+                                <InputGroup as={Col}>
+                                    <Form.Control type="number" />
+                                    <OverlayTrigger placement="auto" delay={{ show: 250, hide: 400 }} overlay={renderTooltip('Beats per minute')}>
+                                        <InputGroup.Text>BPM</InputGroup.Text>
+                                    </OverlayTrigger>
+                                </InputGroup>
+                            </td>
                         </tr>
                         <tr>
                             <td>Capillary Refill</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Color</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                     </>
 
@@ -260,28 +322,48 @@ function FlowSheet(props: any) {
                     <>
                         <tr>
                             <td>Abdomen</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>G-tube/J-tube</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Bowel Sounds</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Mouth</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Stools</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                     </>
 
@@ -289,18 +371,38 @@ function FlowSheet(props: any) {
                     <>
                         <tr>
                             <td>Color</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Condition</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Temperature</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <InputGroup as={Col} xs={6}>
+                                    <Form.Control type="number" min={96} max={102} name="flowSheet.skin.temperature" />
+                                    {/* Later can make this a button that changes and auto-converts the current value from the previous unit to the new unit and vice versa */}
+                                    <InputGroup.Text>°F</InputGroup.Text>
+                                </InputGroup>
+                            </td>
+                            <td>
+                                <InputGroup as={Col} xs={6}>
+                                    <Form.Control type="number" min={96} max={102} name="flowSheet.skin.temperature" />
+                                    {/* Later can make this a button that changes and auto-converts the current value from the previous unit to the new unit and vice versa */}
+                                    <InputGroup.Text>°F</InputGroup.Text>
+                                </InputGroup>
+                            </td>
                         </tr>
                     </>
 
@@ -308,28 +410,56 @@ function FlowSheet(props: any) {
                     <>
                         <tr>
                             <td>Voiding Q/S</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <InputGroup as={Col} xs={6}>
+                                    <Form.Control type="number" min={96} max={102} name="flowSheet.skin.temperature" />
+                                    {/* Later can make this a button that changes and auto-converts the current value from the previous unit to the new unit and vice versa */}
+                                    <InputGroup.Text>mL/s</InputGroup.Text>
+                                </InputGroup>
+                            </td>
+                            <td>
+                                <InputGroup as={Col} xs={6}>
+                                    <Form.Control type="number" min={96} max={102} name="flowSheet.skin.temperature" />
+                                    {/* Later can make this a button that changes and auto-converts the current value from the previous unit to the new unit and vice versa */}
+                                    <InputGroup.Text>mL/s</InputGroup.Text>
+                                </InputGroup>
+                            </td>
                         </tr>
                         <tr>
                             <td>Catheterization</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>ADL's</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Diapers</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Emesis</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                     </>
 
@@ -337,48 +467,84 @@ function FlowSheet(props: any) {
                     <>
                         <tr>
                             <td>Glasses</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Splints/Orthotics</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Monitors</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Feeding Pump</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Portable Suction</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Hearing Aid</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Oxygen</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Wheelchair</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Nebulizer</td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
+                            <td>
+                                <Form.Control type="text" />
+                            </td>
                         </tr>
                     </>
                 </tbody>

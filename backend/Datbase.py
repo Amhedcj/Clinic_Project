@@ -1,1613 +1,1315 @@
-import boto3
 
-# Initialize a session using Amazon DynamoDB
+from botocore.exceptions import ClientError
+
 dynamodb = boto3.resource('dynamodb', region_name='us-west-1')
 
-# Create Patients table
+def table_exists(table_name):
+    try:
+        table = dynamodb.Table(table_name)
+        table.load()
+        return True
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            return False
+        else:
+            raise
+
 def create_patients_table():
-    table = dynamodb.create_table(
-        TableName='Patients',
-        KeySchema=[
-            {
-                'AttributeName': 'patient_id',
-                'KeyType': 'HASH'  # Partition key
+    if not table_exists('Patients'):
+        table = dynamodb.create_table(
+            TableName='Patients',
+            KeySchema=[
+                {'AttributeName': 'patientId', 'KeyType': 'HASH'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'patientId', 'AttributeType': 'N'},
+                {'AttributeName': 'patientFirstName', 'AttributeType': 'S'},
+                {'AttributeName': 'patientLastName', 'AttributeType': 'S'},
+                {'AttributeName': 'allergies', 'AttributeType': 'S'},
+                {'AttributeName': 'favoriteNumber', 'AttributeType': 'S'},
+                {'AttributeName': 'diagnosis', 'AttributeType': 'S'}
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
             }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'patient_id',
-                'AttributeType': 'N'
-            }
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 1,
-            'WriteCapacityUnits': 1
-        }
-    )
-    return table
+        )
+        return table
+    return None
 
-# Create Admissions table
-def create_admissions_table():
-    table = dynamodb.create_table(
-        TableName='Admissions',
-        KeySchema=[
-            {
-                'AttributeName': 'admission_id',
-                'KeyType': 'HASH'  # Partition key
+def create_personnel_table():
+    if not table_exists('Personnel'):
+        table = dynamodb.create_table(
+            TableName='Personnel',
+            KeySchema=[
+                {'AttributeName': 'personnelId', 'KeyType': 'HASH'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'personnelId', 'AttributeType': 'S'},
+                {'AttributeName': 'personnelRole', 'AttributeType': 'S'},
+                {'AttributeName': 'personnelPassWord', 'AttributeType': 'S'},
+                {'AttributeName': 'personnelFirstName', 'AttributeType': 'S'},
+                {'AttributeName': 'personnelLastName', 'AttributeType': 'S'}
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
             }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'admission_id',
-                'AttributeType': 'N'
-            },
-            {
-                'AttributeName': 'patient_id',
-                'AttributeType': 'N'
-            }
-        ],
-        GlobalSecondaryIndexes=[
-            {
-                'IndexName': 'PatientIndex',
-                'KeySchema': [
-                    {
-                        'AttributeName': 'patient_id',
-                        'KeyType': 'HASH'
-                    }
-                ],
-                'Projection': {
-                    'ProjectionType': 'ALL'
-                },
-                'ProvisionedThroughput': {
-                    'ReadCapacityUnits': 1,
-                    'WriteCapacityUnits': 1
-                }
-            }
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 1,
-            'WriteCapacityUnits': 1
-        }
-    )
-    return table
+        )
+        return table
+    return None
 
-# Create Procedures table
+def create_patient_forms_table():
+    if not table_exists('PatientForms'):
+        table = dynamodb.create_table(
+            TableName='PatientForms',
+            KeySchema=[
+                {'AttributeName': 'formId', 'KeyType': 'HASH'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'formId', 'AttributeType': 'N'},
+                {'AttributeName': 'patientId', 'AttributeType': 'N'}
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        return table
+    return None
+
+def create_nurse_signatures_table():
+    if not table_exists('NurseSignatures'):
+        table = dynamodb.create_table(
+            TableName='NurseSignatures',
+            KeySchema=[
+                {'AttributeName': 'signatureId', 'KeyType': 'HASH'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'signatureId', 'AttributeType': 'N'},
+                {'AttributeName': 'formId', 'AttributeType': 'N'},
+                {'AttributeName': 'personnelId', 'AttributeType': 'S'},
+                {'AttributeName': 'signatureImageS3BucketLocation', 'AttributeType': 'S'}
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        return table
+    return None
+
+def create_admissions_and_discharge_table():
+    if not table_exists('AdmissionsAndDischarge'):
+        table = dynamodb.create_table(
+            TableName='AdmissionsAndDischarge',
+            KeySchema=[
+                {'AttributeName': 'formId', 'KeyType': 'HASH'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'formId', 'AttributeType': 'N'},
+                {'AttributeName': 'patientId', 'AttributeType': 'N'},
+                {'AttributeName': 'isAdmission', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'date', 'AttributeType': 'S'},
+                {'AttributeName': 'time', 'AttributeType': 'S'},
+                {'AttributeName': 'mode', 'AttributeType': 'S'},
+                {'AttributeName': 'safetyMeasures', 'AttributeType': 'S'},
+                {'AttributeName': 'patientStability', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'gTubeOrTrach', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'generalAssessment', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'additionalComments', 'AttributeType': 'S'},
+                {'AttributeName': 'nurseSignatureId', 'AttributeType': 'S'}
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        return table
+    return None
+
 def create_procedures_table():
-    table = dynamodb.create_table(
-        TableName='Procedures',
-        KeySchema=[
-            {
-                'AttributeName': 'procedure_id',
-                'KeyType': 'HASH'  # Partition key
+    if not table_exists('Procedures'):
+        table = dynamodb.create_table(
+            TableName='Procedures',
+            KeySchema=[
+                {'AttributeName': 'procedureId', 'KeyType': 'HASH'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'procedureId', 'AttributeType': 'N'},
+                {'AttributeName': 'formId', 'AttributeType': 'N'},
+                {'AttributeName': 'time', 'AttributeType': 'S'},
+                {'AttributeName': 'procedure', 'AttributeType': 'S'},
+                {'AttributeName': 'precautions', 'AttributeType': 'S'},
+                {'AttributeName': 'comments', 'AttributeType': 'S'},
+                {'AttributeName': 'nurseSignatureId', 'AttributeType': 'S'}
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
             }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'procedure_id',
-                'AttributeType': 'N'
-            },
-            {
-                'AttributeName': 'admission_id',
-                'AttributeType': 'N'
-            }
-        ],
-        GlobalSecondaryIndexes=[
-            {
-                'IndexName': 'AdmissionIndex',
-                'KeySchema': [
-                    {
-                        'AttributeName': 'admission_id',
-                        'KeyType': 'HASH'
-                    }
-                ],
-                'Projection': {
-                    'ProjectionType': 'ALL'
-                },
-                'ProvisionedThroughput': {
-                    'ReadCapacityUnits': 1,
-                    'WriteCapacityUnits': 1
-                }
-            }
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 1,
-            'WriteCapacityUnits': 1
-        }
-    )
-    return table
+        )
+        return table
+    return None
 
-# Create Medications table
 def create_medications_table():
-    table = dynamodb.create_table(
-        TableName='Medications',
-        KeySchema=[
-            {
-                'AttributeName': 'medication_id',
-                'KeyType': 'HASH'  # Partition key
+    if not table_exists('Medications'):
+        table = dynamodb.create_table(
+            TableName='Medications',
+            KeySchema=[
+                {'AttributeName': 'medication_id', 'KeyType': 'HASH'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'medication_id', 'AttributeType': 'N'},
+                {'AttributeName': 'formId', 'AttributeType': 'N'},
+                {'AttributeName': 'mdOrder', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'prn', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsUniversal', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsAsepticTechnique', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsSterileTechnique', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionSafety', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsWheelchairLockers', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsClearPathway', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsSkinIntegrity', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsFall', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsElevatedHeadOfBed', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsFowlerPosition', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsSaidRailsUp', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsBedLocker', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsCardiac', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsReflux', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsAspiration', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'precautionsGastronomy', 'AttributeType': 'BOOL'}
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
             }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'medication_id',
-                'AttributeType': 'N'
-            },
-            {
-                'AttributeName': 'admission_id',
-                'AttributeType': 'N'
-            }
-        ],
-        GlobalSecondaryIndexes=[
-            {
-                'IndexName': 'AdmissionIndex',
-                'KeySchema': [
-                    {
-                        'AttributeName': 'admission_id',
-                        'KeyType': 'HASH'
-                    }
-                ],
-                'Projection': {
-                    'ProjectionType': 'ALL'
-                },
-                'ProvisionedThroughput': {
-                    'ReadCapacityUnits': 1,
-                    'WriteCapacityUnits': 1
-                }
-            }
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 1,
-            'WriteCapacityUnits': 1
-        }
-    )
-    return table
+        )
+        return table
+    return None
 
-# Create Therapies table
 def create_therapies_table():
-    table = dynamodb.create_table(
-        TableName='Therapies',
-        KeySchema=[
-            {
-                'AttributeName': 'therapy_id',
-                'KeyType': 'HASH'  # Partition key
+    if not table_exists('Therapies'):
+        table = dynamodb.create_table(
+            TableName='Therapies',
+            KeySchema=[
+                {'AttributeName': 'therapyId', 'KeyType': 'HASH'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'therapyId', 'AttributeType': 'N'},
+                {'AttributeName': 'formId', 'AttributeType': 'N'},
+                {'AttributeName': 'pt', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'ot', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'st', 'AttributeType': 'BOOL'}
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
             }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'therapy_id',
-                'AttributeType': 'N'
-            },
-            {
-                'AttributeName': 'admission_id',
-                'AttributeType': 'N'
-            }
-        ],
-        GlobalSecondaryIndexes=[
-            {
-                'IndexName': 'AdmissionIndex',
-                'KeySchema': [
-                    {
-                        'AttributeName': 'admission_id',
-                        'KeyType': 'HASH'
-                    }
-                ],
-                'Projection': {
-                    'ProjectionType': 'ALL'
-                },
-                'ProvisionedThroughput': {
-                    'ReadCapacityUnits': 1,
-                    'WriteCapacityUnits': 1
-                }
-            }
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 1,
-            'WriteCapacityUnits': 1
-        }
-    )
-    return table
+        )
+        return table
+    return None
 
-# Create Discharges table
-def create_discharges_table():
-    table = dynamodb.create_table(
-        TableName='Discharges',
-        KeySchema=[
-            {
-                'AttributeName': 'discharge_id',
-                'KeyType': 'HASH'  # Partition key
-            }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'discharge_id',
-                'AttributeType': 'N'
-            },
-            {
-                'AttributeName': 'admission_id',
-                'AttributeType': 'N'
-            }
-        ],
-        GlobalSecondaryIndexes=[
-            {
-                'IndexName': 'AdmissionIndex',
-                'KeySchema': [
-                    {
-                        'AttributeName': 'admission_id',
-                        'KeyType': 'HASH'
-                    }
-                ],
-                'Projection': {
-                    'ProjectionType': 'ALL'
-                },
-                'ProvisionedThroughput': {
-                    'ReadCapacityUnits': 1,
-                    'WriteCapacityUnits': 1
-                }
-            }
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 1,
-            'WriteCapacityUnits': 1
-        }
-    )
-    return table
-
-# Create IntakeOutput table
 def create_intake_output_table():
-    table = dynamodb.create_table(
-        TableName='IntakeOutput',
-        KeySchema=[
-            {
-                'AttributeName': 'intake_output_id',
-                'KeyType': 'HASH'  # Partition key
+    if not table_exists('IntakeOutput'):
+        table = dynamodb.create_table(
+            TableName='IntakeOutput',
+            KeySchema=[
+                {'AttributeName': 'intakeOutputId', 'KeyType': 'HASH'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'intakeOutputId', 'AttributeType': 'N'},
+                {'AttributeName': 'formId', 'AttributeType': 'N'},
+                {'AttributeName': 'time', 'AttributeType': 'S'},
+                {'AttributeName': 'po', 'AttributeType': 'S'},
+                {'AttributeName': 'gTube', 'AttributeType': 'S'}
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
             }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'intake_output_id',
-                'AttributeType': 'N'
-            },
-            {
-                'AttributeName': 'admission_id',
-                'AttributeType': 'N'
-            }
-        ],
-        GlobalSecondaryIndexes=[
-            {
-                'IndexName': 'AdmissionIndex',
-                'KeySchema': [
-                    {
-                        'AttributeName': 'admission_id',
-                        'KeyType': 'HASH'
-                    }
-                ],
-                'Projection': {
-                    'ProjectionType': 'ALL'
-                },
-                'ProvisionedThroughput': {
-                    'ReadCapacityUnits': 1,
-                    'WriteCapacityUnits': 1
-                }
-            }
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 1,
-            'WriteCapacityUnits': 1
-        }
-    )
-    return table
+        )
+        return table
+    return None
 
-# Create FlowSheet table
 def create_flow_sheet_table():
-    table = dynamodb.create_table(
-        TableName='FlowSheet',
-        KeySchema=[
-            {
-                'AttributeName': 'flow_sheet_id',
-                'KeyType': 'HASH'  # Partition key
+    if not table_exists('FlowSheet'):
+        table = dynamodb.create_table(
+            TableName='FlowSheet',
+            KeySchema=[
+                {'AttributeName': 'flowsheetId', 'KeyType': 'HASH'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'flowsheetId', 'AttributeType': 'N'},
+                {'AttributeName': 'formId', 'AttributeType': 'N'},
+                {'AttributeName': 'time', 'AttributeType': 'S'},
+                {'AttributeName': 'vitalSignsTemperature', 'AttributeType': 'N'},
+                {'AttributeName': 'vitalSignsBloodPressure', 'AttributeType': 'S'},
+                {'AttributeName': 'vitalSignsHeartRate', 'AttributeType': 'N'},
+                {'AttributeName': 'vitalSignsRespiratoryRate', 'AttributeType': 'N'},
+                {'AttributeName': 'vitalSignsPainScale', 'AttributeType': 'N'},
+                {'AttributeName': 'neurologicalLevelOfConsciousness', 'AttributeType': 'S'},
+                {'AttributeName': 'neurologicalActivity', 'AttributeType': 'S'},
+                {'AttributeName': 'respiratoryEffort', 'AttributeType': 'S'},
+                {'AttributeName': 'respiratoryBreathSounds', 'AttributeType': 'S'},
+                {'AttributeName': 'respiratoryFio2LxM', 'AttributeType': 'S'},
+                {'AttributeName': 'respiratorySao2', 'AttributeType': 'N'},
+                {'AttributeName': 'cardiacHeartSounds', 'AttributeType': 'S'},
+                {'AttributeName': 'cardiacRhythm', 'AttributeType': 'S'},
+                {'AttributeName': 'cardiacPeripheralPulse', 'AttributeType': 'S'},
+                {'AttributeName': 'cardiacCapillaryRefill', 'AttributeType': 'S'},
+                {'AttributeName': 'cardiacColor', 'AttributeType': 'S'},
+                {'AttributeName': 'gastrointestinalAbdomen', 'AttributeType': 'S'},
+                {'AttributeName': 'gastrointestinalGTubeJTube', 'AttributeType': 'S'},
+                {'AttributeName': 'gastrointestinalBowelSounds', 'AttributeType': 'S'},
+                {'AttributeName': 'gastrointestinalMouth', 'AttributeType': 'S'},
+                {'AttributeName': 'gastrointestinalStools', 'AttributeType': 'S'},
+                {'AttributeName': 'skinSolor', 'AttributeType': 'S'},
+                {'AttributeName': 'skinCondition', 'AttributeType': 'S'},
+                {'AttributeName': 'skinTemperature', 'AttributeType': 'S'},
+                {'AttributeName': 'urinaryOutputVoiding', 'AttributeType': 'S'},
+                {'AttributeName': 'urinaryOutputCatheterization', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'urinaryOutputAdls', 'AttributeType': 'S'},
+                {'AttributeName': 'urinaryOutputDiapers', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'urinaryOutputEmesis', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'equipmentGlasses', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'equipmentSplintsOrthotics', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'equipmentMonitors', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'equipmentFeedingPump', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'equipmentPortableSuction', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'equipmentHearingAid', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'equipmentOxygen', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'equipmentWheelchair', 'AttributeType': 'BOOL'},
+                {'AttributeName': 'equipmentNebulizer', 'AttributeType': 'BOOL'}
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
             }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'flow_sheet_id',
-                'AttributeType': 'N'
-            },
-            {
-                'AttributeName': 'admission_id',
-                'AttributeType': 'N'
-            }
-        ],
-        GlobalSecondaryIndexes=[
-            {
-                'IndexName': 'AdmissionIndex',
-                'KeySchema': [
-                    {
-                        'AttributeName': 'admission_id',
-                        'KeyType': 'HASH'
-                    }
-                ],
-                'Projection': {
-                    'ProjectionType': 'ALL'
-                },
-                'ProvisionedThroughput': {
-                    'ReadCapacityUnits': 1,
-                    'WriteCapacityUnits': 1
-                }
-            }
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 1,
-            'WriteCapacityUnits': 1
-        }
-    )
-    return table
+        )
+        return table
+    return None
 
-# Create PatientProgressNotes table
 def create_patient_progress_notes_table():
-    table = dynamodb.create_table(
-        TableName='PatientProgressNotes',
-        KeySchema=[
-            {
-                'AttributeName': 'progress_note_id',
-                'KeyType': 'HASH'  # Partition key
+    if not table_exists('PatientProgressNotes'):
+        table = dynamodb.create_table(
+            TableName='PatientProgressNotes',
+            KeySchema=[
+                {'AttributeName': 'progressNoteId', 'KeyType': 'HASH'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'progressNoteId', 'AttributeType': 'N'},
+                {'AttributeName': 'formId', 'AttributeType': 'N'},
+                {'AttributeName': 'type', 'AttributeType': 'S'},
+                {'AttributeName': 'time', 'AttributeType': 'S'},
+                {'AttributeName': 'notes', 'AttributeType': 'S'},
+                {'AttributeName': 'nurseSignatureId', 'AttributeType': 'S'}
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
             }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'progress_note_id',
-                'AttributeType': 'N'
-            },
-            {
-                'AttributeName': 'patient_id',
-                'AttributeType': 'N'
-            }
-        ],
-        GlobalSecondaryIndexes=[
-            {
-                'IndexName': 'PatientIndex',
-                'KeySchema': [
-                    {
-                        'AttributeName': 'patient_id',
-                        'KeyType': 'HASH'
-                    }
-                ],
-                'Projection': {
-                    'ProjectionType': 'ALL'
-                },
-                'ProvisionedThroughput': {
-                    'ReadCapacityUnits': 1,
-                    'WriteCapacityUnits': 1
-                }
-            }
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 1,
-            'WriteCapacityUnits': 1
-        }
-    )
-    return table
+        )
+        return table
+    return None
 
-# Create all tables
-patients_table = create_patients_table()
-admissions_table = create_admissions_table()
-procedures_table = create_procedures_table()
-medications_table = create_medications_table()
-therapies_table = create_therapies_table()
-discharges_table = create_discharges_table()
-intake_output_table = create_intake_output_table()
-flow_sheet_table = create_flow_sheet_table()
-patient_progress_notes_table = create_patient_progress_notes_table()
-
-# Wait until the tables exist
-patients_table.meta.client.get_waiter('table_exists').wait(TableName='Patients')
-admissions_table.meta.client.get_waiter('table_exists').wait(TableName='Admissions')
-procedures_table.meta.client.get_waiter('table_exists').wait(TableName='Procedures')
-medications_table.meta.client.get_waiter('table_exists').wait(TableName='Medications')
-therapies_table.meta.client.get_waiter('table_exists').wait(TableName='Therapies')
-discharges_table.meta.client.get_waiter('table_exists').wait(TableName='Discharges')
-intake_output_table.meta.client.get_waiter('table_exists').wait(TableName='IntakeOutput')
-flow_sheet_table.meta.client.get_waiter('table_exists').wait(TableName='FlowSheet')
-patient_progress_notes_table.meta.client.get_waiter('table_exists').wait(TableName='PatientProgressNotes')
-
-print("All tables created successfully!")
-
-
-
-
-
-### CRUD Operations for Each Table
-
-#Here is the CRUD operations for each table according to the provided schema design.
-
-### Patients Table
-
-#### Create Patient
-
-def create_patient(patient_id, name, age, allergies):
-    table = dynamodb.Table('Patients')
-    response = table.put_item(
-       Item={
-            'patient_id': patient_id,
-            'name': name,
-            'age': age,
-            'allergies': allergies
-        }
-    )
-    return response
-
-# CRUD Operations Patients Table
-#### Read Patient
-
-def get_patient(patient_id):
-    table = dynamodb.Table('Patients')
-    response = table.get_item(
-        Key={
-            'patient_id': patient_id
-        }
-    )
-    return response.get('Item')
-
-
-#### Update Patient
-
-def update_patient(patient_id, name=None, age=None, allergies=None):
-    table = dynamodb.Table('Patients')
-    update_expression = "SET "
-    expression_attribute_values = {}
+def create_all_tables():
+    tables_to_create = [
+        create_patients_table,
+        create_personnel_table,
+        create_patient_forms_table,
+        create_nurse_signatures_table,
+        create_admissions_and_discharge_table,
+        create_procedures_table,
+        create_medications_table,
+        create_therapies_table,
+        create_intake_output_table,
+        create_flow_sheet_table,
+        create_patient_progress_notes_table
+    ]
     
-    if name:
-        update_expression += "name = :name, "
-        expression_attribute_values[':name'] = name
-    if age:
-        update_expression += "age = :age, "
-        expression_attribute_values[':age'] = age
-    if allergies:
-        update_expression += "allergies = :allergies, "
-        expression_attribute_values[':allergies'] = allergies
-    
-    update_expression = update_expression.rstrip(', ')
-    
-    response = table.update_item(
-        Key={'patient_id': patient_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return response
-
-
-#### Delete Patient
-
-def delete_patient(patient_id):
-    table = dynamodb.Table('Patients')
-    response = table.delete_item(
-        Key={
-            'patient_id': patient_id
-        }
-    )
-    return response
-
-# CRUD Operations Admissions Table
-### Admissions Table
-
-#### Create Admission
-
-def create_admission(admission_id, patient_id, date, arrival_time, mode_of_arrival, safety_measures, stable, g_tube_or_trach, general_assessment, additional_comments, nurse_sign):
-    table = dynamodb.Table('Admissions')
-    response = table.put_item(
-       Item={
-            'admission_id': admission_id,
-            'patient_id': patient_id,
-            'date': date,
-            'arrival_time': arrival_time,
-            'mode_of_arrival': mode_of_arrival,
-            'safety_measures': safety_measures,
-            'stable': stable,
-            'g_tube_or_trach': g_tube_or_trach,
-            'general_assessment': general_assessment,
-            'additional_comments': additional_comments,
-            'nurse_sign': nurse_sign
-        }
-    )
-    return response
-
-
-#### Read Admission
-
-def get_admission(admission_id):
-    table = dynamodb.Table('Admissions')
-    response = table.get_item(
-        Key={
-            'admission_id': admission_id
-        }
-    )
-    return response.get('Item')
-
-
-#### Update Admission
-
-def update_admission(admission_id, patient_id=None, date=None, arrival_time=None, mode_of_arrival=None, safety_measures=None, stable=None, g_tube_or_trach=None, general_assessment=None, additional_comments=None, nurse_sign=None):
-    table = dynamodb.Table('Admissions')
-    update_expression = "SET "
-    expression_attribute_values = {}
-    
-    if patient_id:
-        update_expression += "patient_id = :patient_id, "
-        expression_attribute_values[':patient_id'] = patient_id
-    if date:
-        update_expression += "date = :date, "
-        expression_attribute_values[':date'] = date
-    if arrival_time:
-        update_expression += "arrival_time = :arrival_time, "
-        expression_attribute_values[':arrival_time'] = arrival_time
-    if mode_of_arrival:
-        update_expression += "mode_of_arrival = :mode_of_arrival, "
-        expression_attribute_values[':mode_of_arrival'] = mode_of_arrival
-    if safety_measures:
-        update_expression += "safety_measures = :safety_measures, "
-        expression_attribute_values[':safety_measures'] = safety_measures
-    if stable is not None:
-        update_expression += "stable = :stable, "
-        expression_attribute_values[':stable'] = stable
-    if g_tube_or_trach is not None:
-        update_expression += "g_tube_or_trach = :g_tube_or_trach, "
-        expression_attribute_values[':g_tube_or_trach'] = g_tube_or_trach
-    if general_assessment is not None:
-        update_expression += "general_assessment = :general_assessment, "
-        expression_attribute_values[':general_assessment'] = general_assessment
-    if additional_comments:
-        update_expression += "additional_comments = :additional_comments, "
-        expression_attribute_values[':additional_comments'] = additional_comments
-    if nurse_sign:
-        update_expression += "nurse_sign = :nurse_sign, "
-        expression_attribute_values[':nurse_sign'] = nurse_sign
-    
-    update_expression = update_expression.rstrip(', ')
-    
-    response = table.update_item(
-        Key={'admission_id': admission_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return response
-
-
-#### Delete Admission
-
-def delete_admission(admission_id):
-    table = dynamodb.Table('Admissions')
-    response = table.delete_item(
-        Key={
-            'admission_id': admission_id
-        }
-    )
-    return response
-
-# CRUD Operations Procedures Table
-### Procedures Table
-
-#### Create Procedure
-
-def create_procedure(procedure_id, admission_id, time, procedure, precautions, comments, signature):
-    table = dynamodb.Table('Procedures')
-    response = table.put_item(
-       Item={
-            'procedure_id': procedure_id,
-            'admission_id': admission_id,
-            'time': time,
-            'procedure': procedure,
-            'precautions': precautions,
-            'comments': comments,
-            'signature': signature
-        }
-    )
-    return response
-
-
-#### Read Procedure
-
-def get_procedure(procedure_id):
-    table = dynamodb.Table('Procedures')
-    response = table.get_item(
-        Key={
-            'procedure_id': procedure_id
-        }
-    )
-    return response.get('Item')
-
-
-#### Update Procedure
-
-def update_procedure(procedure_id, admission_id=None, time=None, procedure=None, precautions=None, comments=None, signature=None):
-    table = dynamodb.Table('Procedures')
-    update_expression = "SET "
-    expression_attribute_values = {}
-    
-    if admission_id:
-        update_expression += "admission_id = :admission_id, "
-        expression_attribute_values[':admission_id'] = admission_id
-    if time:
-        update_expression += "time = :time, "
-        expression_attribute_values[':time'] = time
-    if procedure:
-        update_expression += "procedure = :procedure, "
-        expression_attribute_values[':procedure'] = procedure
-    if precautions:
-        update_expression += "precautions = :precautions, "
-        expression_attribute_values[':precautions'] = precautions
-    if comments:
-        update_expression += "comments = :comments, "
-        expression_attribute_values[':comments'] = comments
-    if signature:
-        update_expression += "signature = :signature, "
-        expression_attribute_values[':signature'] = signature
-    
-    update_expression = update_expression.rstrip(', ')
-    
-    response = table.update_item(
-        Key={'procedure_id': procedure_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return response
-
-
-#### Delete Procedure
-
-def delete_procedure(procedure_id):
-    table = dynamodb.Table('Procedures')
-    response = table.delete_item(
-        Key={
-            'procedure_id': procedure_id
-        }
-    )
-    return response
-
-# CRUD Operations Medications Table
-### Medications Table
-
-#### Create Medication
-
-def create_medication(medication_id, admission_id, medication, administered, prn, precautions):
-    table = dynamodb.Table('Medications')
-    response = table.put_item(
-       Item={
-            'medication_id': medication_id,
-            'admission_id': admission_id,
-            'medication': medication,
-            'administered': administered,
-            'prn': prn,
-            'precautions': precautions
-        }
-    )
-    return response
-
-
-#### Read Medication
-
-def get_medication(medication_id):
-    table = dynamodb.Table('Medications')
-    response = table.get_item(
-        Key={
-            'medication_id': medication_id
-        }
-    )
-    return response.get('Item')
-
-
-#### Update Medication
-
-def update_medication(medication_id, admission_id=None, medication=None, administered=None, prn=None, precautions=None):
-    table = dynamodb.Table('Medications')
-    update_expression = "SET "
-    expression_attribute_values = {}
-    
-    if admission_id:
-        update_expression += "admission_id = :admission_id, "
-        expression_attribute_values[':admission_id'] = admission_id
-    if medication:
-        update_expression += "medication = :medication, "
-        expression_attribute_values[':medication'] = medication
-    if administered is not None:
-        update_expression += "administered = :administered, "
-        expression_attribute_values[':administered'] = administered
-    if prn is not None:
-        update_expression += "prn = :prn, "
-        expression_attribute_values[':prn'] = prn
-    if precautions:
-
-
-        update_expression += "precautions = :precautions, "
-        expression_attribute_values[':precautions'] = precautions
-    
-    update_expression = update_expression.rstrip(', ')
-    
-    response = table.update_item(
-        Key={'medication_id': medication_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return response
-
-
-#### Delete Medication
-
-def delete_medication(medication_id):
-    table = dynamodb.Table('Medications')
-    response = table.delete_item(
-        Key={
-            'medication_id': medication_id
-        }
-    )
-    return response
-
-# CRUD Operations Therapies Table
-### Therapies Table
-
-#### Create Therapy
-
-def create_therapy(therapy_id, admission_id, pt, ot, st):
-    table = dynamodb.Table('Therapies')
-    response = table.put_item(
-       Item={
-            'therapy_id': therapy_id,
-            'admission_id': admission_id,
-            'pt': pt,
-            'ot': ot,
-            'st': st
-        }
-    )
-    return response
-
-
-#### Read Therapy
-
-def get_therapy(therapy_id):
-    table = dynamodb.Table('Therapies')
-    response = table.get_item(
-        Key={
-            'therapy_id': therapy_id
-        }
-    )
-    return response.get('Item')
-
-
-#### Update Therapy
-
-def update_therapy(therapy_id, admission_id=None, pt=None, ot=None, st=None):
-    table = dynamodb.Table('Therapies')
-    update_expression = "SET "
-    expression_attribute_values = {}
-    
-    if admission_id:
-        update_expression += "admission_id = :admission_id, "
-        expression_attribute_values[':admission_id'] = admission_id
-    if pt is not None:
-        update_expression += "pt = :pt, "
-        expression_attribute_values[':pt'] = pt
-    if ot is not None:
-        update_expression += "ot = :ot, "
-        expression_attribute_values[':ot'] = ot
-    if st is not None:
-        update_expression += "st = :st, "
-        expression_attribute_values[':st'] = st
-    
-    update_expression = update_expression.rstrip(', ')
-    
-    response = table.update_item(
-        Key={'therapy_id': therapy_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return response
-
-
-#### Delete Therapy
-
-def delete_therapy(therapy_id):
-    table = dynamodb.Table('Therapies')
-    response = table.delete_item(
-        Key={
-            'therapy_id': therapy_id
-        }
-    )
-    return response
-
-# CRUD Operations Discharges Table
-### Discharges Table
-
-#### Create Discharge
-
-def create_discharge(discharge_id, admission_id, discharge_time, mode_of_discharge, safety_measures, stable, g_tube_or_trach, general_assessment, additional_comments, nurse_sign):
-    table = dynamodb.Table('Discharges')
-    response = table.put_item(
-       Item={
-            'discharge_id': discharge_id,
-            'admission_id': admission_id,
-            'discharge_time': discharge_time,
-            'mode_of_discharge': mode_of_discharge,
-            'safety_measures': safety_measures,
-            'stable': stable,
-            'g_tube_or_trach': g_tube_or_trach,
-            'general_assessment': general_assessment,
-            'additional_comments': additional_comments,
-            'nurse_sign': nurse_sign
-        }
-    )
-    return response
-
-
-#### Read Discharge
-
-def get_discharge(discharge_id):
-    table = dynamodb.Table('Discharges')
-    response = table.get_item(
-        Key={
-            'discharge_id': discharge_id
-        }
-    )
-    return response.get('Item')
-
-
-#### Update Discharge
-
-def update_discharge(discharge_id, admission_id=None, discharge_time=None, mode_of_discharge=None, safety_measures=None, stable=None, g_tube_or_trach=None, general_assessment=None, additional_comments=None, nurse_sign=None):
-    table = dynamodb.Table('Discharges')
-    update_expression = "SET "
-    expression_attribute_values = {}
-    
-    if admission_id:
-        update_expression += "admission_id = :admission_id, "
-        expression_attribute_values[':admission_id'] = admission_id
-    if discharge_time:
-        update_expression += "discharge_time = :discharge_time, "
-        expression_attribute_values[':discharge_time'] = discharge_time
-    if mode_of_discharge:
-        update_expression += "mode_of_discharge = :mode_of_discharge, "
-        expression_attribute_values[':mode_of_discharge'] = mode_of_discharge
-    if safety_measures:
-        update_expression += "safety_measures = :safety_measures, "
-        expression_attribute_values[':safety_measures'] = safety_measures
-    if stable is not None:
-        update_expression += "stable = :stable, "
-        expression_attribute_values[':stable'] = stable
-    if g_tube_or_trach is not None:
-        update_expression += "g_tube_or_trach = :g_tube_or_trach, "
-        expression_attribute_values[':g_tube_or_trach'] = g_tube_or_trach
-    if general_assessment is not None:
-        update_expression += "general_assessment = :general_assessment, "
-        expression_attribute_values[':general_assessment'] = general_assessment
-    if additional_comments:
-        update_expression += "additional_comments = :additional_comments, "
-        expression_attribute_values[':additional_comments'] = additional_comments
-    if nurse_sign:
-        update_expression += "nurse_sign = :nurse_sign, "
-        expression_attribute_values[':nurse_sign'] = nurse_sign
-    
-    update_expression = update_expression.rstrip(', ')
-    
-    response = table.update_item(
-        Key={'discharge_id': discharge_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return response
-
-
-#### Delete Discharge
-
-def delete_discharge(discharge_id):
-    table = dynamodb.Table('Discharges')
-    response = table.delete_item(
-        Key={
-            'discharge_id': discharge_id
-        }
-    )
-    return response
-
-# CRUD Operations IntakeOutput Table
-### IntakeOutput Table
-
-#### Create Intake/Output
-
-def create_intake_output(intake_output_id, admission_id, time, po, g_tube):
-    table = dynamodb.Table('IntakeOutput')
-    response = table.put_item(
-       Item={
-            'intake_output_id': intake_output_id,
-            'admission_id': admission_id,
-            'time': time,
-            'po': po,
-            'g_tube': g_tube
-        }
-    )
-    return response
-
-
-#### Read Intake/Output
-
-def get_intake_output(intake_output_id):
-    table = dynamodb.Table('IntakeOutput')
-    response = table.get_item(
-        Key={
-            'intake_output_id': intake_output_id
-        }
-    )
-    return response.get('Item')
-
-
-#### Update Intake/Output
-
-def update_intake_output(intake_output_id, admission_id=None, time=None, po=None, g_tube=None):
-    table = dynamodb.Table('IntakeOutput')
-    update_expression = "SET "
-    expression_attribute_values = {}
-    
-    if admission_id:
-        update_expression += "admission_id = :admission_id, "
-        expression_attribute_values[':admission_id'] = admission_id
-    if time:
-        update_expression += "time = :time, "
-        expression_attribute_values[':time'] = time
-    if po is not None:
-        update_expression += "po = :po, "
-        expression_attribute_values[':po'] = po
-    if g_tube is not None:
-        update_expression += "g_tube = :g_tube, "
-        expression_attribute_values[':g_tube'] = g_tube
-    
-    update_expression = update_expression.rstrip(', ')
-    
-    response = table.update_item(
-        Key={'intake_output_id': intake_output_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return response
-
-
-#### Delete Intake/Output
-
-def delete_intake_output(intake_output_id):
-    table = dynamodb.Table('IntakeOutput')
-    response = table.delete_item(
-        Key={
-            'intake_output_id': intake_output_id
-        }
-    )
-    return response
-
-# CRUD Operations FlowSheet Table
-### FlowSheet Table
-
-#### Create FlowSheet
-
-def create_flow_sheet(flow_sheet_id, admission_id, time, temperature, blood_pressure, heart_rate, respiratory_rate, pain_scale, level_of_consciousness, activity, respiratory_effort, breath_sounds, fio2_lxm, sao2, heart_sounds, rhythm, peripheral_pulse, capillary_refill, color, abdomen, g_tube_j_tube, bowel_sounds, mouth, stools, skin_color, skin_condition, skin_temperature, voiding, catheterization, adls, diapers, emesis, glasses, splints_orthotics, monitors, feeding_pump, portable_suction, hearing_aid, oxygen, wheelchair, nebulizer):
-    table = dynamodb.Table('FlowSheet')
-    response = table.put_item(
-       Item={
-            'flow_sheet_id': flow_sheet_id,
-            'admission_id': admission_id,
-            'time': time,
-            'temperature': temperature,
-            'blood_pressure': blood_pressure,
-            'heart_rate': heart_rate,
-            'respiratory_rate': respiratory_rate,
-            'pain_scale': pain_scale,
-            'level_of_consciousness': level_of_consciousness,
-            'activity': activity,
-            'respiratory_effort': respiratory_effort,
-            'breath_sounds': breath_sounds,
-            'fio2_lxm': fio2_lxm,
-            'sao2': sao2,
-            'heart_sounds': heart_sounds,
-            'rhythm': rhythm,
-            'peripheral_pulse': peripheral_pulse,
-            'capillary_refill': capillary_refill,
-            'color': color,
-            'abdomen': abdomen,
-            'g_tube_j_tube': g_tube_j_tube,
-            'bowel_sounds': bowel_sounds,
-            'mouth': mouth,
-            'stools': stools,
-            'skin_color': skin_color,
-            'skin_condition': skin_condition,
-            'skin_temperature': skin_temperature,
-            'voiding': voiding,
-            'catheterization': catheterization,
-            'adls': adls,
-            'diapers': diapers,
-            'emesis': emesis,
-            'glasses': glasses,
-            'splints_orthotics': splints_orthotics,
-            'monitors': monitors,
-            'feeding_pump': feeding_pump,
-            'portable_suction': portable_suction,
-            'hearing_aid': hearing_aid,
-            'oxygen': oxygen,
-            'wheelchair': wheelchair,
-            'nebulizer': nebulizer
-        }
-    )
-    return response
-
-
-#### Read FlowSheet
-
-def get_flow_sheet(flow_sheet_id):
-    table = dynamodb.Table('FlowSheet')
-    response = table.get_item(
-        Key={
-            'flow_sheet_id': flow_sheet_id
-        }
-    )
-    return response.get('Item')
-
-
-#### Update FlowSheet
-
-def update_flow_sheet(flow_sheet_id, admission_id=None, time=None, temperature=None, blood_pressure=None, heart_rate=None, respiratory_rate=None, pain_scale=None, level_of_consciousness=None, activity=None, respiratory_effort=None, breath_sounds=None, fio2_lxm=None, sao2=None, heart_sounds=None, rhythm=None, peripheral_pulse=None, capillary_refill=None, color=None, abdomen=None, g_tube_j_tube=None, bowel_sounds=None, mouth=None, stools=None, skin_color=None, skin_condition=None, skin_temperature=None, voiding=None, catheterization=None, adls=None, diapers=None, emesis=None, glasses=None, splints_orthotics=None, monitors=None, feeding_pump=None, portable_suction=None, hearing_aid=None, oxygen=None, wheelchair=None, nebulizer=None):
-    table = dynamodb.Table('FlowSheet')
-    update_expression = "SET "
-    expression_attribute_values = {}
-    
-    if admission_id:
-        update_expression += "admission_id = :admission_id, "
-        expression_attribute_values[':admission_id'] = admission_id
-    if time:
-        update_expression += "time = :time, "
-        expression_attribute_values[':time'] = time
-    if temperature:
-        update_expression += "temperature = :temperature, "
-        expression_attribute_values[':temperature'] = temperature
-    if blood_pressure:
-        update_expression += "blood_pressure = :blood_pressure, "
-        expression_attribute_values[':blood_pressure'] = blood_pressure
-    if heart_rate:
-        update_expression += "heart_rate = :heart_rate, "
-        expression_attribute_values[':heart_rate'] = heart_rate
-    if respiratory_rate:
-        update_expression += "respiratory_rate = :respiratory_rate, "
-        expression_attribute_values[':respiratory_rate'] = respiratory_rate
-    if pain_scale is not None:
-        update_expression += "pain_scale = :pain_scale, "
-        expression_attribute_values[':pain_scale'] = pain_scale
-    if level_of_consciousness:
-        update_expression += "level_of_consciousness = :level_of_consciousness, "
-        expression_attribute_values[':level_of_consciousness'] = level_of_consciousness
-    if activity:
-        update_expression += "activity = :activity, "
-        expression_attribute_values[':activity'] = activity
-    if respiratory_effort:
-        update_expression += "respiratory_effort = :respiratory_effort, "
-        expression_attribute_values[':respiratory_effort'] = respiratory_effort
-    if breath_sounds:
-        update_expression += "breath_sounds = :breath_sounds, "
-        expression_attribute_values[':breath_sounds'] = breath_sounds
-    if fio2_lxm is not None:
-        update_expression += "fio2_lxm = :fio2_lxm, "
-        expression_attribute_values[':fio2_lxm'] = fio2_lxm
-    if sao2 is not None:
-        update_expression += "sao2 = :sao2, "
-        expression_attribute_values[':sao2'] = sao2
-    if heart_sounds:
-        update_expression += "heart_sounds = :heart_sounds, "
-        expression_attribute_values[':heart_sounds'] = heart_sounds
-    if rhythm:
-        update_expression += "rhythm = :rhythm, "
-        expression_attribute_values[':rhythm'] = rhythm
-    if peripheral_pulse:
-        update_expression += "peripheral_pulse = :peripheral_pulse, "
-        expression_attribute_values[':peripheral_pulse'] = peripheral_pulse
-    if capillary_refill:
-        update_expression += "capillary_refill = :capillary_refill, "
-        expression_attribute_values[':capillary_refill'] = capillary_refill
-    if color:
-        update_expression += "color = :color, "
-        expression_attribute_values[':color'] = color
-    if abdomen:
-        update_expression += "abdomen = :abdomen, "
-        expression_attribute_values[':abdomen'] = abdomen
-    if g_tube_j_tube:
-        update_expression += "g_tube_j_tube = :g_tube_j_tube, "
-        expression_attribute_values[':g_tube_j_tube'] = g_tube_j_tube
-    if bowel_sounds:
-        update_expression += "bowel_sounds = :bowel_sounds, "
-        expression_attribute_values[':bowel_sounds'] = bowel_sounds
-    if mouth:
-        update_expression += "mouth = :mouth, "
-        expression_attribute_values[':mouth'] = mouth
-    if stools:
-        update_expression += "stools = :stools, "
-        expression_attribute_values[':stools'] = stools
-    if skin_color:
-        update_expression += "skin_color = :skin_color, "
-        expression_attribute_values[':skin_color'] = skin_color
-    if skin_condition:
-        update_expression += "skin_condition = :skin_condition, "
-        expression_attribute_values[':skin_condition'] = skin_condition
-    if skin_temperature:
-        update_expression += "skin_temperature = :skin_temperature, "
-        expression_attribute_values[':skin_temperature'] = skin_temperature
-    if voiding:
-        update_expression += "voiding = :voiding, "
-        expression_attribute_values[':voiding'] = voiding
-    if catheterization is not None:
-        update_expression += "catheterization = :catheterization, "
-        expression_attribute_values[':catheterization'] = catheterization
-    if adls:
-        update_expression += "adls = :adls, "
-        expression_attribute_values[':adls'] = adls
-    if diapers is not None:
-        update_expression += "diapers = :diapers, "
-        expression_attribute_values[':diapers'] = diapers
-    if emesis is not None:
-        update_expression += "emesis = :emesis, "
-        expression_attribute_values[':emesis'] = emesis
-    if glasses is not None:
-        update_expression += "glasses = :glasses, "
-        expression_attribute_values[':glasses'] = glasses
-    if splints_orthotics is not None:
-        update_expression += "splints_orthotics = :splints_orthotics, "
-        expression_attribute_values[':splints_orthotics'] = splints_orthotics
-    if monitors is not None:
-        update_expression += "monitors = :monitors, "
-        expression_attribute_values[':monitors'] = monitors
-    if feeding_pump is not None:
-        update_expression += "feeding_pump = :feeding_pump, "
-        expression_attribute_values[':feeding_pump'] = feeding_pump
-    if portable_suction is not None:
-        update_expression += "portable_suction = :portable_suction, "
-        expression_attribute_values[':portable_suction'] = portable_suction
-    if hearing_aid is not None:
-        update_expression += "hearing_aid = :hearing_aid, "
-        expression_attribute_values[':hearing_aid'] = hearing_aid
-    if oxygen is not None:
-        update_expression += "oxygen = :oxygen, "
-        expression_attribute_values[':oxygen'] = oxygen
-    if wheelchair is not None:
-        update_expression += "wheelchair = :wheelchair, "
-        expression_attribute_values[':wheelchair'] = wheelchair
-    if nebulizer is not None:
-        update_expression += "nebulizer = :nebulizer, "
-        expression_attribute_values[':nebulizer'] = nebulizer
-    
-    update_expression = update_expression.rstrip(', ')
-    
-    response = table.update_item(
-        Key={'flow_sheet_id': flow_sheet_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return response
-
-
-#### Delete FlowSheet
-
-
-
-def delete_flow_sheet(flow_sheet_id):
-    table = dynamodb.Table('FlowSheet')
-    response = table.delete_item(
-        Key={
-            'flow_sheet_id': flow_sheet_id
-        }
-    )
-    return response
-
-# CRUD Operations PatientProgressNotes Table
-### PatientProgressNotes Table
-
-#### Create Patient Progress Note
-
-def create_patient_progress_note(progress_note_id, patient_id, date, time, notes, nurse_signature):
-    table = dynamodb.Table('PatientProgressNotes')
-    response = table.put_item(
-       Item={
-            'progress_note_id': progress_note_id,
-            'patient_id': patient_id,
-            'date': date,
-            'time': time,
-            'notes': notes,
-            'nurse_signature': nurse_signature
-        }
-    )
-    return response
-
-
-#### Read Patient Progress Note
-
-def get_patient_progress_note(progress_note_id):
-    table = dynamodb.Table('PatientProgressNotes')
-    response = table.get_item(
-        Key={
-            'progress_note_id': progress_note_id
-        }
-    )
-    return response.get('Item')
-
-
-#### Update Patient Progress Note
-
-def update_patient_progress_note(progress_note_id, patient_id=None, date=None, time=None, notes=None, nurse_signature=None):
-    table = dynamodb.Table('PatientProgressNotes')
-    update_expression = "SET "
-    expression_attribute_values = {}
-    
-    if patient_id:
-        update_expression += "patient_id = :patient_id, "
-        expression_attribute_values[':patient_id'] = patient_id
-    if date:
-        update_expression += "date = :date, "
-        expression_attribute_values[':date'] = date
-    if time:
-        update_expression += "time = :time, "
-        expression_attribute_values[':time'] = time
-    if notes:
-        update_expression += "notes = :notes, "
-        expression_attribute_values[':notes'] = notes
-    if nurse_signature:
-        update_expression += "nurse_signature = :nurse_signature, "
-        expression_attribute_values[':nurse_signature'] = nurse_signature
-    
-    update_expression = update_expression.rstrip(', ')
-    
-    response = table.update_item(
-        Key={'progress_note_id': progress_note_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return response
-
-
-#### Delete Patient Progress Note
-
-def delete_patient_progress_note(progress_note_id):
-    table = dynamodb.Table('PatientProgressNotes')
-    response = table.delete_item(
-        Key={
-            'progress_note_id': progress_note_id
-        }
-    )
-    return response
-
-
-#Flask application with endpoints for each CRUD operationto create a simple web server that will handle HTTP requests and interact with the DynamoDB tables
-
-#pip install Flask boto3
-from flask import Flask, request, jsonify
-import boto3
-
-app = Flask(__name__)
-
-# Initialize a session using Amazon DynamoDB
-dynamodb = boto3.resource('dynamodb', region_name='us-west-1')
-
-# Helper function to get table
-def get_table(table_name):
-    return dynamodb.Table(table_name)
-
-# Patients CRUD endpoints
-
-@app.route('/patients', methods=['POST'])
-def create_patient():
-    data = request.json
-    table = get_table('Patients')
-    response = table.put_item(Item=data)
-    return jsonify(response), 201
-
-@app.route('/patients/<int:patient_id>', methods=['GET'])
-def get_patient(patient_id):
-    table = get_table('Patients')
-    response = table.get_item(Key={'patient_id': patient_id})
-    return jsonify(response.get('Item')), 200
-
-@app.route('/patients/<int:patient_id>', methods=['PUT'])
-def update_patient(patient_id):
-    data = request.json
-    table = get_table('Patients')
-    update_expression = "SET " + ", ".join(f"{k} = :{k}" for k in data.keys())
-    expression_attribute_values = {f":{k}": v for k, v in data.items()}
-    response = table.update_item(
-        Key={'patient_id': patient_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return jsonify(response), 200
-
-@app.route('/patients/<int:patient_id>', methods=['DELETE'])
-def delete_patient(patient_id):
-    table = get_table('Patients')
-    response = table.delete_item(Key={'patient_id': patient_id})
-    return jsonify(response), 204
-
-# Admissions CRUD endpoints
-
-@app.route('/admissions', methods=['POST'])
-def create_admission():
-    data = request.json
-    table = get_table('Admissions')
-    response = table.put_item(Item=data)
-    return jsonify(response), 201
-
-@app.route('/admissions/<int:admission_id>', methods=['GET'])
-def get_admission(admission_id):
-    table = get_table('Admissions')
-    response = table.get_item(Key={'admission_id': admission_id})
-    return jsonify(response.get('Item')), 200
-
-@app.route('/admissions/<int:admission_id>', methods=['PUT'])
-def update_admission(admission_id):
-    data = request.json
-    table = get_table('Admissions')
-    update_expression = "SET " + ", ".join(f"{k} = :{k}" for k in data.keys())
-    expression_attribute_values = {f":{k}": v for k, v in data.items()}
-    response = table.update_item(
-        Key={'admission_id': admission_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return jsonify(response), 200
-
-@app.route('/admissions/<int:admission_id>', methods=['DELETE'])
-def delete_admission(admission_id):
-    table = get_table('Admissions')
-    response = table.delete_item(Key={'admission_id': admission_id})
-    return jsonify(response), 204
-
-# Procedures CRUD endpoints
-
-@app.route('/procedures', methods=['POST'])
-def create_procedure():
-    data = request.json
-    table = get_table('Procedures')
-    response = table.put_item(Item=data)
-    return jsonify(response), 201
-
-@app.route('/procedures/<int:procedure_id>', methods=['GET'])
-def get_procedure(procedure_id):
-    table = get_table('Procedures')
-    response = table.get_item(Key={'procedure_id': procedure_id})
-    return jsonify(response.get('Item')), 200
-
-@app.route('/procedures/<int:procedure_id>', methods=['PUT'])
-def update_procedure(procedure_id):
-    data = request.json
-    table = get_table('Procedures')
-    update_expression = "SET " + ", ".join(f"{k} = :{k}" for k in data.keys())
-    expression_attribute_values = {f":{k}": v for k, v in data.items()}
-    response = table.update_item(
-        Key={'procedure_id': procedure_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return jsonify(response), 200
-
-@app.route('/procedures/<int:procedure_id>', methods=['DELETE'])
-def delete_procedure(procedure_id):
-    table = get_table('Procedures')
-    response = table.delete_item(Key={'procedure_id': procedure_id})
-    return jsonify(response), 204
-
-# Medications CRUD endpoints
-
-@app.route('/medications', methods=['POST'])
-def create_medication():
-    data = request.json
-    table = get_table('Medications')
-    response = table.put_item(Item=data)
-    return jsonify(response), 201
-
-@app.route('/medications/<int:medication_id>', methods=['GET'])
-def get_medication(medication_id):
-    table = get_table('Medications')
-    response = table.get_item(Key={'medication_id': medication_id})
-    return jsonify(response.get('Item')), 200
-
-@app.route('/medications/<int:medication_id>', methods=['PUT'])
-def update_medication(medication_id):
-    data = request.json
-    table = get_table('Medications')
-    update_expression = "SET " + ", ".join(f"{k} = :{k}" for k in data.keys())
-    expression_attribute_values = {f":{k}": v for k, v in data.items()}
-    response = table.update_item(
-        Key={'medication_id': medication_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return jsonify(response), 200
-
-@app.route('/medications/<int:medication_id>', methods=['DELETE'])
-def delete_medication(medication_id):
-    table = get_table('Medications')
-    response = table.delete_item(Key={'medication_id': medication_id})
-    return jsonify(response), 204
-
-# Therapies CRUD endpoints
-
-@app.route('/therapies', methods=['POST'])
-def create_therapy():
-    data = request.json
-    table = get_table('Therapies')
-    response = table.put_item(Item=data)
-    return jsonify(response), 201
-
-@app.route('/therapies/<int:therapy_id>', methods=['GET'])
-def get_therapy(therapy_id):
-    table = get_table('Therapies')
-    response = table.get_item(Key={'therapy_id': therapy_id})
-    return jsonify(response.get('Item')), 200
-
-@app.route('/therapies/<int:therapy_id>', methods=['PUT'])
-def update_therapy(therapy_id):
-    data = request.json
-    table = get_table('Therapies')
-    update_expression = "SET " + ", ".join(f"{k} = :{k}" for k in data.keys())
-    expression_attribute_values = {f":{k}": v for k, v in data.items()}
-    response = table.update_item(
-        Key={'therapy_id': therapy_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return jsonify(response), 200
-
-@app.route('/therapies/<int:therapy_id>', methods=['DELETE'])
-def delete_therapy(therapy_id):
-    table = get_table('Therapies')
-    response = table.delete_item(Key={'therapy_id': therapy_id})
-    return jsonify(response), 204
-
-# Discharges CRUD endpoints
-
-@app.route('/discharges', methods=['POST'])
-def create_discharge():
-    data = request.json
-    table = get_table('Discharges')
-    response = table.put_item(Item=data)
-    return jsonify(response), 201
-
-@app.route('/discharges/<int:discharge_id>', methods=['GET'])
-def get_discharge(discharge_id):
-    table = get_table('Discharges')
-    response = table.get_item(Key={'discharge_id': discharge_id})
-    return jsonify(response.get('Item')), 200
-
-@app.route('/discharges/<int:discharge_id>', methods=['PUT'])
-def update_discharge(discharge_id):
-    data = request.json
-    table = get_table('Discharges')
-    update_expression = "SET " + ", ".join(f"{k} = :{k}" for k in data.keys())
-    expression_attribute_values = {f":{k}": v for k, v in data.items()}
-    response = table.update_item(
-        Key={'discharge_id': discharge_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return jsonify(response), 200
-
-@app.route('/discharges/<int:discharge_id>', methods=['DELETE'])
-def delete_discharge(discharge_id):
-    table = get_table('Discharges')
-    response = table.delete_item(Key={'discharge_id': discharge_id})
-    return jsonify(response), 204
-
-# IntakeOutput CRUD endpoints
-
-@app.route('/intakeoutput', methods=['POST'])
-def create_intake_output():
-    data = request.json
-    table = get_table('IntakeOutput')
-    response = table.put_item(Item=data)
-    return jsonify(response), 201
-
-@app.route('/intakeoutput/<int:intake_output_id>', methods=['GET'])
-def get_intake_output(intake_output_id):
-    table = get_table('IntakeOutput')
-    response = table.get_item(Key={'intake_output_id': intake_output_id})
-    return jsonify(response.get('Item')), 200
-
-@app.route('/intakeoutput/<int:intake_output_id>', methods=['PUT'])
-def update_intake_output(intake_output_id):
-    data = request.json
-    table = get_table('IntakeOutput')
-    update_expression = "SET " + ", ".join(f"{k} = :{k}" for k in data.keys())
-    expression_attribute_values = {f":{k}": v for k, v in data.items()}
-    response = table.update_item(
-        Key={'intake_output_id': intake_output_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return jsonify(response), 200
-
-@app.route('/intakeoutput/<int:intake_output_id>', methods=['DELETE'])
-def delete_intake_output(intake_output_id):
-    table = get_table('IntakeOutput')
-    response = table.delete_item(Key={'intake_output_id': intake_output_id})
-    return jsonify(response), 204
-
-# FlowSheet CRUD endpoints Request 
-
-@app.route('/flowsheet', methods=['POST'])
-def create_flow_sheet():
-    data = request.json
-    table = get_table('FlowSheet')
-    response = table.put_item(Item=data)
-    return jsonify(response), 201
-
-@app.route('/flowsheet/<int:flow_sheet_id>', methods=['GET'])
-def get_flow_sheet(flow_sheet_id):
-    table = get_table('FlowSheet')
-    response = table.get_item(Key={'flow_sheet_id': flow_sheet_id})
-    return jsonify(response.get('Item')), 200
-
-@app.route('/flowsheet/<int:flow_sheet_id>', methods=['PUT'])
-def update_flow_sheet(flow_sheet_id):
-    data = request.json
-    table = get_table('FlowSheet')
-    update_expression = "SET " + ", ".join(f"{k} = :{k}" for k in data.keys())
-    expression_attribute_values = {f":{k}": v for k, v in data.items()}
-    response = table.update_item(
-        Key={'flow_sheet_id': flow_sheet_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return jsonify(response), 200
-
-@app.route('/flowsheet/<int:flow_sheet_id>', methods=['DELETE'])
-def delete_flow_sheet(flow_sheet_id):
-    table = get_table('FlowSheet')
-    response = table.delete_item(Key={'flow_sheet_id': flow_sheet_id})
-    return jsonify(response), 204
-
-# PatientProgressNotes CRUD endpoints
-
-@app.route('/patientprogressnotes', methods=['POST'])
-def create_patient_progress_note():
-    data = request.json
-    table = get_table('PatientProgressNotes')
-    response = table.put_item(Item=data)
-    return jsonify(response), 201
-
-@app.route('/patientprogressnotes/<int:progress_note_id>', methods=['GET'])
-def get_patient_progress_note(progress_note_id):
-    table = get_table('PatientProgressNotes')
-    response = table.get_item(Key={'progress_note_id': progress_note_id})
-    return jsonify(response.get('Item')), 200
-
-@app.route('/patientprogressnotes/<int:progress_note_id>', methods=['PUT'])
-def update_patient_progress_note(progress_note_id):
-    data = request.json
-    table = get_table('PatientProgressNotes')
-    update_expression = "SET " + ", ".join(f"{k} = :{k}" for k in data.keys())
-    expression_attribute_values = {f":{k}": v for k, v in data.items()}
-    response = table.update_item(
-        Key={'progress_note_id': progress_note_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attribute_values,
-        ReturnValues="UPDATED_NEW"
-    )
-    return jsonify(response), 200
-
-@app.route('/patientprogressnotes/<int:progress_note_id>', methods=['DELETE'])
-def delete_patient_progress_note(progress_note_id):
-    table = get_table('PatientProgressNotes')
-    response = table.delete_item(Key={'progress_note_id': progress_note_id})
-    return jsonify(response), 204
+    for create_table_func in tables_to_create:
+        table = create_table_func()
+        if table:
+            table.meta.client.get_waiter('table_exists').wait(TableName=table.table_name)
+            print(f"Table {table.table_name} created successfully.")
+        else:
+            print(f"Table {create_table_func.__name__.replace('create_', '').replace('_table', '').title()} already exists.")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    create_all_tables()
+
+
+
+
+
+###CRUD OPERATIONS
+import boto3
+import json
+### Create Operations
+
+#### Create Patient
+dynamodb = boto3.resource('dynamodb')
+patients_table = dynamodb.Table('Patients')
+def lambda_handler(event, context):
+    patient_data = {
+        'patientId': event['patientId'],
+        'patientFirstName': event['patientFirstName'],
+        'patientLastName': event['patientLastName'],
+        'allergies': event['allergies'],
+        'favoriteNumber': event['favoriteNumber'],
+        'diagnosis': event['diagnosis']
+    }
+    
+    patients_table.put_item(Item=patient_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Patient created successfully')
+    }
+
+#### Create Personnel
+dynamodb = boto3.resource('dynamodb')
+personnel_table = dynamodb.Table('Personnel')
+def lambda_handler(event, context):
+    personnel_data = {
+        'personnelId': event['personnelId'],
+        'personnelRole': event['personnelRole'],
+        'personnelPassWord': event['personnelPassWord'],
+        'personnelFirstName': event['personnelFirstName'],
+        'personnelLastName': event['personnelLastName']
+    }
+    
+    personnel_table.put_item(Item=personnel_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Personnel created successfully')
+    }
+
+#### Create PatientForm
+dynamodb = boto3.resource('dynamodb')
+patient_forms_table = dynamodb.Table('PatientForms')
+def lambda_handler(event, context):
+    form_data = {
+        'formId': event['formId'],
+        'patientId': event['patientId']
+    }
+    patient_forms_table.put_item(Item=form_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('PatientForm created successfully')
+    }
+
+#### Create NurseSignature
+dynamodb = boto3.resource('dynamodb')
+nurse_signatures_table = dynamodb.Table('NurseSignatures')
+def lambda_handler(event, context):
+    signature_data = {
+        'signatureId': event['signatureId'],
+        'formId': event['formId'],
+        'personnelId': event['personnelId'],
+        'signatureImageS3BucketLocation': event['signatureImageS3BucketLocation']
+    }
+    
+    nurse_signatures_table.put_item(Item=signature_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('NurseSignature created successfully')
+    }
+
+#### Create AdmissionsAndDischarge
+dynamodb = boto3.resource('dynamodb')
+admissions_discharge_table = dynamodb.Table('AdmissionsAndDischarge')
+def lambda_handler(event, context):
+    admission_discharge_data = {
+        'formId': event['formId'],
+        'patientId': event['patientId'],
+        'isAdmission': event['isAdmission'],
+        'date': event['date'],
+        'time': event['time'],
+        'mode': event['mode'],
+        'safetyMeasures': event['safetyMeasures'],
+        'patientStability': event['patientStability'],
+        'gTubeOrTrach': event['gTubeOrTrach'],
+        'generalAssessment': event['generalAssessment'],
+        'additionalComments': event['additionalComments'],
+        'nurseSignatureId': event['nurseSignatureId']
+    }
+    
+    admissions_discharge_table.put_item(Item=admission_discharge_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('AdmissionsAndDischarge record created successfully')
+    }
+
+#### Create Procedure
+dynamodb = boto3.resource('dynamodb')
+procedures_table = dynamodb.Table('Procedures')
+def lambda_handler(event, context):
+    procedure_data = {
+        'procedureId': event['procedureId'],
+        'formId': event['formId'],
+        'time': event['time'],
+        'procedure': event['procedure'],
+        'precautions': event['precautions'],
+        'comments': event['comments'],
+        'nurseSignatureId': event['nurseSignatureId']
+    }
+    
+    procedures_table.put_item(Item=procedure_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Procedure created successfully')
+    }
+
+#### Create Medication
+dynamodb = boto3.resource('dynamodb')
+medications_table = dynamodb.Table('Medications')
+def lambda_handler(event, context):
+    medication_data = {
+        'medication_id': event['medication_id'],
+        'formId': event['formId'],
+        'mdOrder': event['mdOrder'],
+        'prn': event['prn'],
+        'precautionsUniversal': event['precautionsUniversal'],
+        'precautionsAsepticTechnique': event['precautionsAsepticTechnique'],
+        'precautionsSterileTechnique': event['precautionsSterileTechnique'],
+        'precautionSafety': event['precautionSafety'],
+        'precautionsWheelchairLockers': event['precautionsWheelchairLockers'],
+        'precautionsClearPathway': event['precautionsClearPathway'],
+        'precautionsSkinIntegrity': event['precautionsSkinIntegrity'],
+        'precautionsFall': event['precautionsFall'],
+        'precautionsElevatedHeadOfBed': event['precautionsElevatedHeadOfBed'],
+        'precautionsFowlerPosition': event['precautionsFowlerPosition'],
+        'precautionsSaidRailsUp': event['precautionsSaidRailsUp'],
+        'precautionsBedLocker': event['precautionsBedLocker'],
+        'precautionsCardiac': event['precautionsCardiac'],
+        'precautionsReflux': event['precautionsReflux'],
+        'precautionsAspiration': event['precautionsAspiration'],
+        'precautionsGastronomy': event['precautionsGastronomy']
+    }
+    
+    medications_table.put_item(Item=medication_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Medication created successfully')
+    }
+
+#### Create Therapy
+dynamodb = boto3.resource('dynamodb')
+therapies_table = dynamodb.Table('Therapies')
+def lambda_handler(event, context):
+    therapy_data = {
+        'therapyId': event['therapyId'],
+        'formId': event['formId'],
+        'pt': event['pt'],
+        'ot': event['ot'],
+        'st': event['st']
+    }
+    
+    therapies_table.put_item(Item=therapy_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Therapy created successfully')
+    }
+
+#### Create IntakeOutput
+dynamodb = boto3.resource('dynamodb')
+intake_output_table = dynamodb.Table('IntakeOutput')
+def lambda_handler(event, context):
+    intake_output_data = {
+        'intakeOutputId': event['intakeOutputId'],
+        'formId': event['formId'],
+        'time': event['time'],
+        'po': event['po'],
+        'gTube': event['gTube']
+    }
+    
+    intake_output_table.put_item(Item=intake_output_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('IntakeOutput record created successfully')
+    }
+
+#### Create FlowSheet
+dynamodb = boto3.resource('dynamodb')
+flowsheet_table = dynamodb.Table('FlowSheet')
+def lambda_handler(event, context):
+    flowsheet_data = {
+        'flowsheetId': event['flowsheetId'],
+        'formId': event['formId'],
+        'time': event['time'],
+        'vitalSignsTemperature': event['vitalSignsTemperature'],
+        'vitalSignsBloodPressure': event['vitalSignsBloodPressure'],
+        'vitalSignsHeartRate': event['vitalSignsHeartRate'],
+        'vitalSignsRespiratoryRate': event['vitalSignsRespiratoryRate'],
+        'vitalSignsPainScale': event['vitalSignsPainScale'],
+        'neurologicalLevelOfConsciousness': event['neurologicalLevelOfConsciousness'],
+        'neurologicalActivity': event['neurologicalActivity'],
+        'respiratoryEffort': event['respiratoryEffort'],
+        'respiratoryBreathSounds': event['respiratoryBreathSounds'],
+        'respiratoryFio2LxM': event['respiratoryFio2LxM'],
+        'respiratorySao2': event['respiratorySao2'],
+        'cardiacHeartSounds': event['cardiacHeartSounds'],
+        'cardiacRhythm': event['cardiacRhythm'],
+        'cardiacPeripheralPulse': event['cardiacPeripheralPulse'],
+        'cardiacCapillaryRefill': event['cardiacCapillaryRefill'],
+        'cardiacColor': event['cardiacColor'],
+        'gastrointestinalAbdomen': event['gastrointestinalAbdomen'],
+        'gastrointestinalGTubeJTube': event['gastrointestinalGTubeJTube'],
+        'gastrointestinalBowelSounds': event['gastrointestinalBowelSounds'],
+        'gastrointestinalMouth': event['gastrointestinalMouth'],
+        'gastrointestinalStools': event['gastrointestinalStools'],
+        'skinSolor': event['skinSolor'],
+        'skinCondition': event['skinCondition'],
+        'skinTemperature': event['skinTemperature'],
+        'urinaryOutputVoiding': event['urinaryOutputVoiding'],
+        'urinaryOutputCatheterization': event['urinaryOutputCatheterization'],
+        'urinaryOutputAdls': event['urinaryOutputAdls'],
+        'urinaryOutputDiapers': event['urinaryOutputDiapers'],
+        'urinaryOutputEmesis': event['urinaryOutputEmesis'],
+        'equipmentGlasses': event['equipmentGlasses'],
+        'equipmentSplintsOrthotics': event['equipmentSplintsOrthotics'],
+        'equipmentMonitors': event['equipmentMonitors'],
+        'equipmentFeedingPump': event['equipmentFeedingPump'],
+        'equipmentPortableSuction': event['equipmentPortableSuction'],
+        'equipmentHearingAid': event['equipmentHearingAid'],
+        'equipmentOxygen': event['equipmentOxygen'],
+        'equipmentWheelchair': event['equipmentWheelchair'],
+        'equipmentNebulizer': event['equipmentNebulizer']
+    }
+    flowsheet_table.put_item(Item=flowsheet_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('FlowSheet record created successfully')
+    }
+
+#### Create PatientProgressNote
+dynamodb = boto3.resource('dynamodb')
+progress_notes_table = dynamodb.Table('PatientProgressNotes')
+def lambda_handler(event, context):
+    progress_note_data = {
+        'progressNoteId': event['progressNoteId'],
+        'formId': event['formId'],
+        'type': event['type'],
+        'time': event['time'],
+        'notes': event['notes'],
+        'nurseSignatureId': event['nurseSignatureId']
+    }
+    
+    progress_notes_table.put_item(Item=progress_note_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('PatientProgressNote created successfully')
+    }
+
+### Read Operations
+
+#### Get Patient
+dynamodb = boto3.resource('dynamodb')
+patients_table = dynamodb.Table('Patients')
+def lambda_handler(event, context):
+    patient_id = event['patientId']
+    response = patients_table.get_item(
+        Key={
+            'patientId': patient_id
+        }
+    )
+    if 'Item' in response:
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response['Item'])
+        }
+    else:
+        return {
+            'statusCode': 404,
+            'body': json.dumps('Patient not found')
+        }
+
+#### Get Personnel
+dynamodb = boto3.resource('dynamodb')
+personnel_table = dynamodb.Table('Personnel')
+def lambda_handler(event, context):
+    personnel_id = event['personnelId']
+    response = personnel_table.get_item(
+        Key={
+            'personnelId': personnel_id
+        }
+    )
+    if 'Item' in response:
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response['Item'])
+        }
+    else:
+        return {
+            'statusCode': 404,
+            'body': json.dumps('Personnel not found')
+        }
+
+#### Get PatientForm
+dynamodb = boto3.resource('dynamodb')
+patient_forms_table = dynamodb.Table('PatientForms')
+def lambda_handler(event, context):
+    form_id = event['formId']
+    response = patient_forms_table.get_item(
+        Key={
+            'formId': form_id
+        }
+    )
+    if 'Item' in response:
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response['Item'])
+        }
+    else:
+        return {
+            'statusCode': 404,
+            'body': json.dumps('PatientForm not found')
+        }
+        
+#### Get NurseSignature
+dynamodb = boto3.resource('dynamodb')
+nurse_signatures_table = dynamodb.Table('NurseSignatures')
+def lambda_handler(event, context):
+    signature_id = event['signatureId']
+    response = nurse_signatures_table.get_item(
+        Key={
+            'signatureId': signature_id
+        }
+    )
+    if 'Item' in response:
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response['Item'])
+        }
+    else:
+        return {
+            'statusCode': 404,
+            'body': json.dumps('NurseSignature not found')
+        }
+
+#### Get AdmissionsAndDischarge
+dynamodb = boto3.resource('dynamodb')
+admissions_discharge_table = dynamodb.Table('AdmissionsAndDischarge')
+def lambda_handler(event, context):
+    form_id = event['formId']
+    response = admissions_discharge_table.get_item(
+        Key={
+            'formId': form_id
+        }
+    )
+    if 'Item' in response:
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response['Item'])
+        }
+    else:
+        return {
+            'statusCode': 404,
+            'body': json.dumps('AdmissionsAndDischarge record not found')
+        }
+
+#### Get Procedure
+dynamodb = boto3.resource('dynamodb')
+procedures_table = dynamodb.Table('Procedures')
+def lambda_handler(event, context):
+    procedure_id = event['procedureId']
+    response = procedures_table.get_item(
+        Key={
+            'procedureId': procedure_id
+        }
+    )  
+    if 'Item' in response:
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response['Item'])
+        }
+    else:
+        return {
+            'statusCode': 404,
+            'body': json.dumps('Procedure not found')
+        }
+
+#### Get Medication
+dynamodb = boto3.resource('dynamodb')
+medications_table = dynamodb.Table('Medications')
+def lambda_handler(event, context):
+    medication_id = event['medication_id']
+    response = medications_table.get_item(
+        Key={
+            'medication_id': medication_id
+        }
+    )
+    if 'Item' in response:
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response['Item'])
+        }
+    else:
+        return {
+            'statusCode': 404,
+            'body': json.dumps('Medication not found')
+        }
+
+#### Get Therapy
+dynamodb = boto3.resource('dynamodb')
+therapies_table = dynamodb.Table('Therapies')
+def lambda_handler(event, context):
+    therapy_id = event['therapyId']
+    response = therapies_table.get_item(
+        Key={
+            'therapyId': therapy_id
+        }
+    )
+    
+    if 'Item' in response:
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response['Item'])
+        }
+    else:
+        return {
+            'statusCode': 404,
+            'body': json.dumps('Therapy not found')
+        }
+
+#### Get IntakeOutput
+dynamodb = boto3.resource('dynamodb')
+intake_output_table = dynamodb.Table('IntakeOutput')
+def lambda_handler(event, context):
+    intake_output_id = event['intakeOutputId']
+    response = intake_output_table.get_item(
+        Key={
+            'intakeOutputId': intake_output_id
+        }
+    )
+    
+    if 'Item' in response:
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response['Item'])
+        }
+    else:
+        return {
+            'statusCode': 404,
+            'body': json.dumps('IntakeOutput record not found')
+        }
+
+#### Get FlowSheet
+dynamodb = boto3.resource('dynamodb')
+flowsheet_table = dynamodb.Table('FlowSheet')
+def lambda_handler(event, context):
+    flowsheet_id = event['flowsheetId']
+    response = flowsheet_table.get_item(
+        Key={
+            'flowsheetId': flowsheet_id
+        }
+    )
+    
+    if 'Item' in response:
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response['Item'])
+        }
+    else:
+        return {
+            'statusCode': 404,
+            'body': json.dumps('FlowSheet record not found')
+        }
+
+#### Get PatientProgressNote
+dynamodb = boto3.resource('dynamodb')
+progress_notes_table = dynamodb.Table('PatientProgressNotes')
+def lambda_handler(event, context):
+    progress_note_id = event['progressNoteId']
+    response = progress_notes_table.get_item(
+        Key={
+            'progressNoteId': progress_note_id
+        }
+    )
+    
+    if 'Item' in response:
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response['Item'])
+        }
+    else:
+        return {
+            'statusCode': 404,
+            'body': json.dumps('PatientProgressNote not found')
+        }
+
+### Update Operations
+
+#### Update Patient
+dynamodb = boto3.resource('dynamodb')
+patients_table = dynamodb.Table('Patients')
+def lambda_handler(event, context):
+    patient_id = event['patientId']
+    update_expression = "set "
+    expression_attribute_values = {}
+    
+    for key, value in event.items():
+        if key != 'patientId':
+            update_expression += f"{key} = :{key}, "
+            expression_attribute_values[f":{key}"] = value
+    
+    update_expression = update_expression.rstrip(', ')
+    
+    patients_table.update_item(
+        Key={'patientId': patient_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Patient updated successfully')
+    }
+
+#### Update Personnel
+dynamodb = boto3.resource('dynamodb')
+personnel_table = dynamodb.Table('Personnel')
+def lambda_handler(event, context):
+    personnel_id = event['personnelId']
+    update_expression = "set "
+    expression_attribute_values = {}
+    
+    for key, value in event.items():
+        if key != 'personnelId':
+            update_expression += f"{key} = :{key}, "
+            expression_attribute_values[f":{key}"] = value
+    
+    update_expression = update_expression.rstrip(', ')
+    
+    personnel_table.update_item(
+        Key={'personnelId': personnel_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Personnel updated successfully')
+    }
+
+#### Update PatientForm
+dynamodb = boto3.resource('dynamodb')
+patient_forms_table = dynamodb.Table('PatientForms')
+def lambda_handler(event, context):
+    form_id = event['formId']
+    update_expression = "set "
+    expression_attribute_values = {}
+    
+    for key, value in event.items():
+        if key != 'formId':
+            update_expression += f"{key} = :{key}, "
+            expression_attribute_values[f":{key}"] = value
+    
+    update_expression = update_expression.rstrip(', ')
+    
+    patient_forms_table.update_item(
+        Key={'formId': form_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values
+    )
+    return {
+        'statusCode': 200,
+        'body': json.dumps('PatientForm updated successfully')
+    }
+
+#### Update NurseSignature
+dynamodb = boto3.resource('dynamodb')
+nurse_signatures_table = dynamodb.Table('NurseSignatures')
+def lambda_handler(event, context):
+    signature_id = event['signatureId']
+    update_expression = "set "
+    expression_attribute_values = {}
+    
+    for key, value in event.items():
+        if key != 'signatureId':
+            update_expression += f"{key} = :{key}, "
+            expression_attribute_values[f":{key}"] = value
+    
+    update_expression = update_expression.rstrip(', ')
+    
+    nurse_signatures_table.update_item(
+        Key={'signatureId': signature_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values
+    )
+    return {
+        'statusCode': 200,
+        'body': json.dumps('NurseSignature updated successfully')
+    }
+
+#### Update AdmissionsAndDischarge
+dynamodb = boto3.resource('dynamodb')
+admissions_discharge_table = dynamodb.Table('AdmissionsAndDischarge')
+def lambda_handler(event, context):
+    form_id = event['formId']
+    update_expression = "set "
+    expression_attribute_values = {}
+    
+    for key, value in event.items():
+        if key != 'formId':
+            update_expression += f"{key} = :{key}, "
+            expression_attribute_values[f":{key}"] = value
+    
+    update_expression = update_expression.rstrip(', ')
+    
+    admissions_discharge_table.update_item(
+        Key={'formId': form_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('AdmissionsAndDischarge record updated successfully')
+    }
+    
+#### Update Procedure
+dynamodb = boto3.resource('dynamodb')
+procedures_table = dynamodb.Table('Procedures')
+def lambda_handler(event, context):
+    procedure_id = event['procedureId']
+    update_expression = "set "
+    expression_attribute_values = {}
+    
+    for key, value in event.items():
+        if key != 'procedureId':
+            update_expression += f"{key} = :{key}, "
+            expression_attribute_values[f":{key}"] = value
+    
+    update_expression = update_expression.rstrip(', ')
+    
+    procedures_table.update_item(
+        Key={'procedureId': procedure_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Procedure updated successfully')
+    }
+
+#### Update Medication
+dynamodb = boto3.resource('dynamodb')
+medications_table = dynamodb.Table('Medications')
+def lambda_handler(event, context):
+    medication_id = event['medication_id']
+    update_expression = "set "
+    expression_attribute_values = {}
+    
+    for key, value in event.items():
+        if key != 'medication_id':
+            update_expression += f"{key} = :{key}, "
+            expression_attribute_values[f":{key}"] = value
+    
+    update_expression = update_expression.rstrip(', ')
+    
+    medications_table.update_item(
+        Key={'medication_id': medication_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values
+    ) 
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Medication updated successfully')
+    }
+
+#### Update Therapy
+dynamodb = boto3.resource('dynamodb')
+therapies_table = dynamodb.Table('Therapies')
+def lambda_handler(event, context):
+    therapy_id = event['therapyId']
+    update_expression = "set "
+    expression_attribute_values = {}
+    
+    for key, value in event.items():
+        if key != 'therapyId':
+            update_expression += f"{key} = :{key}, "
+            expression_attribute_values[f":{key}"] = value
+    
+    update_expression = update_expression.rstrip(', ')
+    
+    therapies_table.update_item(
+        Key={'therapyId': therapy_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Therapy updated successfully')
+    }
+
+#### Update IntakeOutput
+dynamodb = boto3.resource('dynamodb')
+intake_output_table = dynamodb.Table('IntakeOutput')
+def lambda_handler(event, context):
+    intake_output_id = event['intakeOutputId']
+    update_expression = "set "
+    expression_attribute_values = {}
+    
+    for key, value in event.items():
+        if key != 'intakeOutputId':
+            update_expression += f"{key} = :{key}, "
+            expression_attribute_values[f":{key}"] = value
+    
+    update_expression = update_expression.rstrip(', ')
+    
+    intake_output_table.update_item(
+        Key={'intakeOutputId': intake_output_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('IntakeOutput record updated successfully')
+    }
+
+#### Update FlowSheet
+dynamodb = boto3.resource('dynamodb')
+flowsheet_table = dynamodb.Table('FlowSheet')
+def lambda_handler(event, context):
+    flowsheet_id = event['flowsheetId']
+    update_expression = "set "
+    expression_attribute_values = {}
+    
+    for key, value in event.items():
+        if key != 'flowsheetId':
+            update_expression += f"{key} = :{key}, "
+            expression_attribute_values[f":{key}"] = value
+    
+    update_expression = update_expression.rstrip(', ')
+    
+    flowsheet_table.update_item(
+        Key={'flowsheetId': flowsheet_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('FlowSheet record updated successfully')
+    }
+
+#### Update PatientProgressNote
+dynamodb = boto3.resource('dynamodb')
+progress_notes_table = dynamodb.Table('PatientProgressNotes')
+def lambda_handler(event, context):
+    progress_note_id = event['progressNoteId']
+    update_expression = "set "
+    expression_attribute_values = {}
+  
+    for key, value in event.items():
+        if key != 'progressNoteId':
+            update_expression += f"{key} = :{key}, "
+            expression_attribute_values[f":{key}"] = value
+    
+    update_expression = update_expression.rstrip(', ')
+    
+    progress_notes_table.update_item(
+        Key={'progressNoteId': progress_note_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('PatientProgressNote updated successfully')
+    }
+
+### Delete Operations
+
+#### Delete Patient
+dynamodb = boto3.resource('dynamodb')
+patients_table = dynamodb.Table('Patients')
+def lambda_handler(event, context):
+    patient_id = event['patientId']
+    patients_table.delete_item(
+        Key={
+            'patientId': patient_id
+        }
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Patient deleted successfully')
+    }
+
+#### Delete Personnel
+dynamodb = boto3.resource('dynamodb')
+personnel_table = dynamodb.Table('Personnel')
+def lambda_handler(event, context):
+    personnel_id = event['personnelId']
+    personnel_table.delete_item(
+        Key={
+            'personnelId': personnel_id
+        }
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Personnel deleted successfully')
+    }
+
+#### Delete PatientForm
+dynamodb = boto3.resource('dynamodb')
+patient_forms_table = dynamodb.Table('PatientForms')
+def lambda_handler(event, context):
+    form_id = event['formId']
+    patient_forms_table.delete_item(
+        Key={
+            'formId': form_id
+        }
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('PatientForm deleted successfully')
+    }
+
+#### Delete NurseSignature
+dynamodb = boto3.resource('dynamodb')
+nurse_signatures_table = dynamodb.Table('NurseSignatures')
+def lambda_handler(event, context):
+    signature_id = event['signatureId']
+    nurse_signatures_table.delete_item(
+        Key={
+            'signatureId': signature_id
+        }
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('NurseSignature deleted successfully')
+    }
+
+#### Delete AdmissionsAndDischarge
+dynamodb = boto3.resource('dynamodb')
+admissions_discharge_table = dynamodb.Table('AdmissionsAndDischarge')
+def lambda_handler(event, context):
+    form_id = event['formId']
+    admissions_discharge_table.delete_item(
+        Key={
+            'formId': form_id
+        }
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('AdmissionsAndDischarge record deleted successfully')
+    }
+
+#### Delete Procedure
+dynamodb = boto3.resource('dynamodb')
+procedures_table = dynamodb.Table('Procedures')
+def lambda_handler(event, context):
+    procedure_id = event['procedureId']
+    procedures_table.delete_item(
+        Key={
+            'procedureId': procedure_id
+        }
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Procedure deleted successfully')
+    }
+
+#### Delete Medication
+dynamodb = boto3.resource('dynamodb')
+medications_table = dynamodb.Table('Medications')
+def lambda_handler(event, context):
+    medication_id = event['medication_id']
+    medications_table.delete_item(
+        Key={
+            'medication_id': medication_id
+        }
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Medication deleted successfully')
+    }
+
+#### Delete Therapy
+dynamodb = boto3.resource('dynamodb')
+therapies_table = dynamodb.Table('Therapies')
+def lambda_handler(event, context):
+    therapy_id = event['therapyId']
+    therapies_table.delete_item(
+        Key={
+            'therapyId': therapy_id
+        }
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Therapy deleted successfully')
+    }
+
+#### Delete IntakeOutput
+dynamodb = boto3.resource('dynamodb')
+intake_output_table = dynamodb.Table('IntakeOutput')
+def lambda_handler(event, context):
+    intake_output_id = event['intakeOutputId']
+    intake_output_table.delete_item(
+        Key={
+            'intakeOutputId': intake_output_id
+        }
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('IntakeOutput record deleted successfully')
+    }
+
+#### Delete FlowSheet
+dynamodb = boto3.resource('dynamodb')
+flowsheet_table = dynamodb.Table('FlowSheet')
+def lambda_handler(event, context):
+    flowsheet_id = event['flowsheetId']
+    flowsheet_table.delete_item(
+        Key={
+            'flowsheetId': flowsheet_id
+        }
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('FlowSheet record deleted successfully')
+    }
+
+#### Delete PatientProgressNote
+dynamodb = boto3.resource('dynamodb')
+progress_notes_table = dynamodb.Table('PatientProgressNotes')
+def lambda_handler(event, context):
+    progress_note_id = event['progressNoteId']
+    progress_notes_table.delete_item(
+        Key={
+            'progressNoteId': progress_note_id
+        }
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('PatientProgressNote deleted successfully')
+    }

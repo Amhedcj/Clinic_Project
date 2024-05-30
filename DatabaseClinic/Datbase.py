@@ -15,7 +15,8 @@ def create_patients_table():
         ],
         AttributeDefinitions=[
             {'AttributeName': 'patient_id', 'AttributeType': 'N'},
-            {'AttributeName': 'patient_name', 'AttributeType': 'S'},
+            {'AttributeName': 'patientName', 'AttributeType': 'S'},
+            {'AttributeName': 'patientLastName', 'AttributeType': 'S'},
             {'AttributeName': 'allergies', 'AttributeType': 'S'},
             {'AttributeName': 'arrival_time', 'AttributeType': 'S'},
             {'AttributeName': 'mode_of_arrival', 'AttributeType': 'S'},
@@ -24,6 +25,8 @@ def create_patients_table():
             {'AttributeName': 'general_assessment', 'AttributeType': 'S'},
             {'AttributeName': 'additional_comments', 'AttributeType': 'S'},
             {'AttributeName': 'nurse_sign', 'AttributeType': 'S'}
+            
+            
         ],
         ProvisionedThroughput={
             'ReadCapacityUnits': 1,
@@ -452,12 +455,13 @@ print("All tables created successfully!")
 
 #### Create Patient
 
-def create_patient(patient_id, patient_name, allergies, arrival_time, mode_of_arrival, date, safety_measures, general_assessment, additional_comments, nurse_sign):
+def create_patient(patient_id, patientFirstName,patientLastName, allergies, arrival_time, mode_of_arrival, date, safety_measures, general_assessment, additional_comments, nurse_sign):
     table = dynamodb.Table('Patients')
     response = table.put_item(
        Item={
             'patient_id': patient_id,
-            'patient_name': patient_name,
+            'patientFirstName': patientFirstName,
+            'patientLastName': patientLastName,
             'allergies': allergies,
             'arrival_time': arrival_time,
             'mode_of_arrival': mode_of_arrival,
@@ -486,14 +490,14 @@ def get_patient(patient_id):
 
 #### Update Patient
 
-def update_patient(patient_id, patient_name=None, allergies=None, arrival_time=None, mode_of_arrival=None, date=None, safety_measures=None, general_assessment=None, additional_comments=None, nurse_sign=None):
+def update_patient(patient_id, patientFirstName=None, allergies=None, arrival_time=None, mode_of_arrival=None, date=None, safety_measures=None, general_assessment=None, additional_comments=None, nurse_sign=None):
     table = dynamodb.Table('Patients')
     update_expression = "SET "
     expression_attribute_values = {}
     
-    if patient_name:
-        update_expression += "patient_name = :patient_name, "
-        expression_attribute_values[':patient_name'] = patient_name
+    if patientFirstName:
+        update_expression += "patientFirstName = :patientFirstName, "
+        expression_attribute_values[':patientFirstName'] = patientFirstName
     if allergies:
         update_expression += "allergies = :allergies, "
         expression_attribute_values[':allergies'] = allergies

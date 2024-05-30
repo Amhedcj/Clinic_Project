@@ -34,96 +34,169 @@ export class Procedure
     }
 }
 
-export default class AdmissionData {
-    patientFirstName: string;
-    patientLastName: string;
-    // date: any;
-    allergies: any;
-    arrival: ArrivalDepartureData;
-    // arrivalTime: any;
-    // modeOfArrival: any;
-    // safetyMeasures: any;
-    // patientStable: any;
-    // gTubeOrTrach: any;
-    // generalAssessment: any;
-    // additionalComments: any;
-    // nurseSign: any;
-    procedures: Procedure[];
-    medicationsAdministered: any;
-    medicationsPRN: any;
-    otherComments: any;
-    
-    therapies: {
-        pt: any;
-        ot: any;
-        st: any;
-    };
+export class FlowSheetData {
+    time: any;
 
-    discharge: ArrivalDepartureData;
-    // dischargeTime: any;
-    // modeOfDischarge: any;
-    intakeOutput: any[];
-    flowSheet: {
-        time: any;
+    vitalSigns: {
         temperature: any;
         bloodPressure: any;
         heartRate: any;
         respiratoryRate: any;
         painScale: any;
+    };
 
-        neurological: {
-            levelOfConsciousness: any;
-            activity: any;
+    neurological: {
+        levelOfConsciousness: any;
+        activity: any;
+    };
+
+    respiratory: {
+        effort: any;
+        breathSounds: any;
+        fio2LxM: any;
+        sao2: any
+    };
+
+    cardiac: {
+        heartSounds: any;
+        rhythm: any;
+        peripheralPulse: any;
+        capillaryRefill: any;
+        color: any
+    };
+
+    gastrointestinal: {
+        abdomen: any;
+        gTubeJTube: any;
+        bowelSounds: any;
+        mouth: any;
+        stools: any
+    };
+
+    skin: {
+        color: any;
+        condition: any;
+        temperature: any
+    };
+
+    urinaryOutput: {
+        voiding: any;
+        catheterization: any;
+        adls: any;
+        diapers: any;
+        emesis: any
+    };
+
+    equipment: {
+        glasses: any;
+        splintsOrthotics: any;
+        monitors: any;
+        feedingPump: any;
+        portableSuction: any;
+        hearingAid: any;
+        oxygen: any;
+        wheelchair: any;
+        nebulizer: any
+    }
+    
+    constructor() {
+        this.time = undefined;
+        
+        this.vitalSigns = {
+            temperature: undefined,
+            bloodPressure: undefined,
+            heartRate: undefined,
+            respiratoryRate: undefined,
+            painScale: undefined
         };
 
-        respiratory: {
-            effort: any;
-            breathSounds: any;
-            fio2LxM: any;
-            sao2: any
+        this.neurological = {
+            levelOfConsciousness: undefined,
+            activity: undefined
         };
 
-        cardiac: {
-            heartSounds: any;
-            rhythm: any;
-            peripheralPulse: any;
-            capillaryRefill: any;
-            color: any
+        this.respiratory = {
+            effort: undefined,
+            breathSounds: undefined,
+            fio2LxM: undefined,
+            sao2: undefined
         };
 
-        gastrointestinal: {
-            abdomen: any;
-            gTubeJTube: any;
-            bowelSounds: any;
-            mouth: any;
-            stools: any
+        this.cardiac = {
+            heartSounds: undefined,
+            rhythm: undefined,
+            peripheralPulse: undefined,
+            capillaryRefill: undefined,
+            color: undefined
         };
 
-        skin: {
-            color: any;
-            condition: any;
-            temperature: any
+        this.gastrointestinal = {
+            abdomen: undefined,
+            gTubeJTube: undefined,
+            bowelSounds: undefined,
+            mouth: undefined,
+            stools: undefined
         };
 
-        urinaryOutput: {
-            voiding: any;
-            catheterization: any;
-            adls: any;
-            diapers: any;
-            emesis: any
+        this.skin = {
+            color: undefined,
+            condition: undefined,
+            temperature: undefined
         };
 
-        equipment: {
-            glasses: any;
-            splintsOrthotics: any;
-            monitors: any;
-            feedingPump: any;
-            portableSuction: any;
-            hearingAid: any;
-            oxygen: any;
-            wheelchair: any;
-            nebulizer: any
+        this.urinaryOutput = {
+            voiding: undefined,
+            catheterization: undefined,
+            adls: undefined,
+            diapers: undefined,
+            emesis: undefined
+        };
+
+        this.equipment = {
+            glasses: undefined,
+            splintsOrthotics: undefined,
+            monitors: undefined,
+            feedingPump: undefined,
+            portableSuction: undefined,
+            hearingAid: undefined,
+            oxygen: undefined,
+            wheelchair: undefined,
+            nebulizer: undefined
         }
+    }
+}
+
+export default class AdmissionData {
+    testBool: boolean;
+
+    patientFirstName: string;
+    patientLastName: string;
+    // date: any;
+    allergies: any;
+    
+    arrival: ArrivalDepartureData;
+    
+    procedures: Procedure[];
+
+    medications: {
+        mdOrder: boolean;
+        prn: boolean;
+    };
+
+    otherComments: any;
+    
+    therapies: {
+        pt: boolean;
+        ot: boolean;
+        st: boolean;
+    };
+
+    discharge: ArrivalDepartureData;
+
+    intakeOutput: any[];
+    flowSheet: {
+        am: FlowSheetData,
+        pm: FlowSheetData
     };
 
     progressNotes: {
@@ -168,14 +241,19 @@ export default class AdmissionData {
         // this.additionalComments = undefined;
         // this.nurseSign = undefined;
         this.procedures = [new Procedure()] as Procedure[];
-        this.medicationsAdministered = undefined;
-        this.medicationsPRN = undefined;
+        this.medications = {
+            mdOrder: false,
+            prn: false
+        };
+        
         this.otherComments = undefined;
 
+        this.testBool = false;
+
         this.therapies = {
-            pt: undefined,
-            ot: undefined,
-            st: undefined
+            pt: false,
+            ot: false,
+            st: false
         };
 
         // this.dischargeTime = undefined;
@@ -203,66 +281,9 @@ export default class AdmissionData {
 
         this.intakeOutput = [];
         this.flowSheet = {
-            time: undefined,
-            temperature: undefined,
-            bloodPressure: undefined,
-            heartRate: undefined,
-            respiratoryRate: undefined,
-            painScale: undefined,
-            neurological: {
-                levelOfConsciousness: undefined,
-                activity: undefined
-            },
-
-            respiratory: {
-                effort: undefined,
-                breathSounds: undefined,
-                fio2LxM: undefined,
-                sao2: undefined
-            },
-
-            cardiac: {
-                heartSounds: undefined,
-                rhythm: undefined,
-                peripheralPulse: undefined,
-                capillaryRefill: undefined,
-                color: undefined
-            },
-
-            gastrointestinal: {
-                abdomen: undefined,
-                gTubeJTube: undefined,
-                bowelSounds: undefined,
-                mouth: undefined,
-                stools: undefined
-            },
-
-            skin: {
-                color: undefined,
-                condition: undefined,
-                temperature: undefined
-            },
-
-            urinaryOutput: {
-                voiding: undefined,
-                catheterization: undefined,
-                adls: undefined,
-                diapers: undefined,
-                emesis: undefined
-            },
-
-            equipment: {
-                glasses: undefined,
-                splintsOrthotics: undefined,
-                monitors: undefined,
-                feedingPump: undefined,
-                portableSuction: undefined,
-                hearingAid: undefined,
-                oxygen: undefined,
-                wheelchair: undefined,
-                nebulizer: undefined
-            }
-        };
+            am: new FlowSheetData(),
+            pm: new FlowSheetData()
+        }
 
         this.progressNotes = {
             date: undefined,

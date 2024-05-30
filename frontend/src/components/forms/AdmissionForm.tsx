@@ -7,6 +7,7 @@ import IntakeOutputTable from '../IntakeOutputTable';
 import FlowSheet from '../FlowSheet';
 import AdmissionData from '../../types/AdmissionData';
 import { setNestedState, setNestedStateArr } from '../../utils/utils';
+import NewPrecautionsTable from '../NewPrecautionsTable';
 
 const AdmissionForm = () => {
     const [formData, setFormData] = useState(new AdmissionData());
@@ -16,7 +17,7 @@ const AdmissionForm = () => {
     }
 
     const handleChange = (e: any) => {
-        const { name, value, type, checked } = e.target;
+        const { name, value, type, checked, htmlFor } = e.target;
 
         if (type === 'checkbox') {
             setFormData(setNestedState(structuredClone(formData), name, checked));
@@ -73,9 +74,10 @@ const AdmissionForm = () => {
                         </Form.Group>
 {/* Allergies */}
                         <Form.Group as={Row} id='allergies' label='aa'>
-                            <Form.Label column sm='2'>Allergies:</Form.Label>
+                            {/* <Form.Label column sm='2'>Allergies:</Form.Label> */}
                             <Col sm='8'>
                               <InputGroup>
+                                  <InputGroup.Text>Allergies</InputGroup.Text>
                                   <Form.Control type='text' name='allergies' value={formData.allergies} onChange={handleChange} />
                                   <ToggleButton id='toggleAllergiesNA' name='allergiesNA' variant='outline-primary' type='checkbox' value='' checked={formData.allergies === 'N/A'} onChange={toggleAllergiesNA}>N/A</ToggleButton>
                               </InputGroup>
@@ -97,9 +99,9 @@ const AdmissionForm = () => {
                         </Col>
                         <Col xs={7}>
                             <InputGroup className='mb-3'>
-                            <Form.Control type='date' name='arrival.date' value={formData.arrival.date} onChange={handleChange} />
-                            <Form.Control type='time' name='arrival.time' value={formData.arrival.time} onChange={handleChange} />
-                            <Button>Now</Button>
+                                <Form.Control type='date' name='arrival.date' value={formData.arrival.date} onChange={handleChange} />
+                                <Form.Control type='time' name='arrival.time' value={formData.arrival.time} onChange={handleChange} />
+                                <Button>Now</Button>
                             </InputGroup>
                         </Col>
                     </Form.Group>
@@ -117,7 +119,7 @@ const AdmissionForm = () => {
                         <ListGroup.Item as='li'>
                             <Form.Group as={Row} id='safetyMeasures'>
                                 <Col xs={'auto'}><Form.Label>Safety Measures in Place:</Form.Label></Col>
-                                <Col xs={'auto'}><Form.Check type='checkbox' label='Car Seat/Seat Belt/Wheelchair' name='arrival.safetyMeasures' value='' checked={formData.arrival.safetyMeasures === true} onChange={handleChange} /></Col>
+                                <Col xs={'auto'}><Form.Check type='checkbox' label='Car Seat/Seat Belt/Wheelchair' name='arrival.safetyMeasures' value='' checked={formData.arrival.safetyMeasures===true} onChange={handleChange} /></Col>
                             </Form.Group>
                         </ListGroup.Item>
 
@@ -125,8 +127,8 @@ const AdmissionForm = () => {
                         <ListGroup.Item as='li'>
                             <Form.Group as={Row} id='patientStable'>
                                 <Col xs={'auto'}><Form.Label>Patient Stable:</Form.Label></Col>
-                                <Col xs={'auto'}><Form.Check type='checkbox' label='VS WSL' name='arrival.patientStability.vsWsl' value='' checked={formData.arrival.patientStability.vsWsl === true} onChange={handleChange} /></Col>
-                                <Col xs={'auto'}><Form.Check type='checkbox' label='G-Tube or Trach tube properly in place' name='arrival.patientStability.gTubeOrTrach' value='' checked={formData.arrival.patientStability.gTubeOrTrach === true} onChange={handleChange} /></Col>
+                                <Col xs={'auto'}><Form.Check type='checkbox' label='VS WSL' name='arrival.patientStability.vsWsl' value='' checked={formData.arrival.patientStability.vsWsl===true} onChange={handleChange} /></Col>
+                                <Col xs={'auto'}><Form.Check type='checkbox' label='G-Tube or Trach tube properly in place' name='arrival.patientStability.gTubeOrTrach' value='' checked={formData.arrival.patientStability.gTubeOrTrach===true} onChange={handleChange} /></Col>
                             </Form.Group>
                         </ListGroup.Item>
 
@@ -134,7 +136,7 @@ const AdmissionForm = () => {
                         <ListGroup.Item as='li'>
                             <Form.Group as={Row} id=''>
                                 <Col xs={'auto'}><Form.Label>General Assessment (Head to Toe) Completed:</Form.Label></Col>
-                                <Col xs={'auto'}><Form.Check type='checkbox' label='Yes' name='arrival.generalAssessment' value='' checked={formData.arrival.generalAssessment === true} onChange={handleChange} /></Col>
+                                <Col xs={'auto'}><Form.Check type='checkbox' label='Yes' name='arrival.generalAssessment' value='' checked={formData.arrival.generalAssessment===true} onChange={handleChange} /></Col>
                             </Form.Group>
                         </ListGroup.Item>
                         </ListGroup>
@@ -171,26 +173,40 @@ const AdmissionForm = () => {
                         <h2 className='text-center mt-4'>Medications</h2>
 
                         <Form.Group as={Row} id=''>
-                                <Col xs={'auto'}><Form.Label>Administration:</Form.Label></Col>
+                            <InputGroup className='mb-3'>
+                                <InputGroup.Text>Administration</InputGroup.Text>
+                                <ToggleButton id='medications.mdOrder' name='medications.mdOrder' checked={formData.medications.mdOrder===true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>MD order</ToggleButton>
+                                <ToggleButton id='medications.prn' name='medications.prn' checked={formData.medications.prn===true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>PRN</ToggleButton>
+                            </InputGroup>
+
+                                {/* <Col xs={'auto'}><Form.Label>Administration:</Form.Label></Col>
                                 <Col xs={'auto'}><Form.Check type='checkbox' label='Administered as per MD order' name='medicationsAdministered' checked={formData.medicationsAdministered} onChange={handleChange} /></Col>
-                                <Col xs={'auto'}><Form.Check type='checkbox' label='PRN' name='medicationsPRN' checked={formData.medicationsPRN} onChange={handleChange} /></Col>
+                                <Col xs={'auto'}><Form.Check type='checkbox' label='PRN' name='medicationsPRN' checked={formData.medicationsPRN} onChange={handleChange} /></Col> */}
                         </Form.Group>
 
 {/* Precautions */}
-                        <PrecautionsTable />
+                        <NewPrecautionsTable />
                         <Form.Group>
                             <FloatingLabel id='floatingInput' label='Other Comments:' className='mb-3'>
                                 <Form.Control as='textarea' id='name' placeholder='' required />
                             </FloatingLabel>
                         </Form.Group>
+
 {/* Therapies Section */}
                         <h2 className='text-center mt-4'>Therapies</h2>
 
                         <Form.Group as={Row} className='mt-3 mb-3'>
-                            <Col xs={'auto'}><Form.Label>Therapies:</Form.Label></Col>
+                            <InputGroup as={Col} className='mb-3'>
+                                <InputGroup.Text>Therapies</InputGroup.Text>
+                                <ToggleButton id='therapies.pt' name='therapies.pt' checked={formData.therapies.pt===true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>PT</ToggleButton>
+                                <ToggleButton id='therapies.ot' name='therapies.ot' checked={formData.therapies.ot===true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>OT</ToggleButton>
+                                <ToggleButton id='therapies.st' name='therapies.st' checked={formData.therapies.st===true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>ST</ToggleButton>
+                            </InputGroup>
+
+                            {/* <Col xs={'auto'}><Form.Label>Therapies:</Form.Label></Col>
                             <Col xs={'auto'}><Form.Check type='checkbox' label='PT' /></Col>
                             <Col xs={'auto'}><Form.Check type='checkbox' label='OT' /></Col>
-                            <Col xs={'auto'}><Form.Check type='checkbox' label='ST' /></Col>
+                            <Col xs={'auto'}><Form.Check type='checkbox' label='ST' /></Col> */}
                         </Form.Group>
                         </Container>
                     </Col>
@@ -217,9 +233,9 @@ const AdmissionForm = () => {
 {/* Mode of discharge */}
                         <Form.Group as={Row} id='modeOfDischarge' className='mt-3'>
                             <Col xs={'auto'}><Form.Label>Mode of Discharge:</Form.Label></Col>
-                            <Col xs={'auto'}><Form.Check type='radio' label='Caregiver' name='discharge.mode' value='caregiver' checked={formData.discharge.mode === 'caregiver'} onChange={handleChange} /></Col>
-                            <Col xs={'auto'}><Form.Check type='radio' label='Transportation' name='discharge.mode' value='transportation' checked={formData.discharge.mode === 'transportation'} onChange={handleChange} /></Col>
-                            <Col xs={'auto'}><Form.Check type='radio' label='Ambulance' name='discharge.mode' value='ambulance' checked={formData.discharge.mode === 'ambulance'} onChange={handleChange} /></Col>
+                            <Col xs={'auto'}><Form.Check type='radio' label='Caregiver' name='discharge.mode' value='caregiver' checked={formData.discharge.mode==='caregiver'} onChange={handleChange} /></Col>
+                            <Col xs={'auto'}><Form.Check type='radio' label='Transportation' name='discharge.mode' value='transportation' checked={formData.discharge.mode==='transportation'} onChange={handleChange} /></Col>
+                            <Col xs={'auto'}><Form.Check type='radio' label='Ambulance' name='discharge.mode' value='ambulance' checked={formData.discharge.mode==='ambulance'} onChange={handleChange} /></Col>
                         </Form.Group>
 
 {/* Safety Measures */}
@@ -227,7 +243,7 @@ const AdmissionForm = () => {
                         <ListGroup.Item as='li'>
                             <Form.Group as={Row} id='safetyMeasures'>
                                 <Col xs={'auto'}><Form.Label>Safety Measures in Place:</Form.Label></Col>
-                                <Col xs={'auto'}><Form.Check type='checkbox' label='Car Seat/Seat Belt/Wheelchair' name='discharge.safetyMeasures' value='true' checked={formData.discharge.safetyMeasures === true} onChange={handleChange} /></Col>
+                                <Col xs={'auto'}><Form.Check type='checkbox' label='Car Seat/Seat Belt/Wheelchair' name='discharge.safetyMeasures' value='true' checked={formData.discharge.safetyMeasures===true} onChange={handleChange} /></Col>
                             </Form.Group>
                         </ListGroup.Item>
 
@@ -235,8 +251,8 @@ const AdmissionForm = () => {
                         <ListGroup.Item as='li'>
                             <Form.Group as={Row} id='patientStable'>
                                 <Col xs={'auto'}><Form.Label>Patient Stable:</Form.Label></Col>
-                                <Col xs={'auto'}><Form.Check type='checkbox' label='VS WSL' name='' value='' checked={formData.discharge.patientStability.vsWsl === true} onChange={handleChange} /></Col>
-                                <Col xs={'auto'}><Form.Check type='checkbox' label='G-Tube or Trach tube properly in place' name='' value='' checked={formData.discharge.patientStability.gTubeOrTrach === true} onChange={handleChange} /></Col>
+                                <Col xs={'auto'}><Form.Check type='checkbox' label='VS WSL' name='' value='' checked={formData.discharge.patientStability.vsWsl===true} onChange={handleChange} /></Col>
+                                <Col xs={'auto'}><Form.Check type='checkbox' label='G-Tube or Trach tube properly in place' name='' value='' checked={formData.discharge.patientStability.gTubeOrTrach===true} onChange={handleChange} /></Col>
                             </Form.Group>
                         </ListGroup.Item>
 
@@ -244,7 +260,7 @@ const AdmissionForm = () => {
                         <ListGroup.Item as='li'>
                             <Form.Group as={Row} id='patientStable'>
                                 <Col xs={'auto'}><Form.Label>General Assessment (Head to Toe) Completed:</Form.Label></Col>
-                                <Col xs={'auto'}><Form.Check type='checkbox' label='Yes' name='' value='' checked={formData.discharge.generalAssessment === true} onChange={handleChange} /></Col>
+                                <Col xs={'auto'}><Form.Check type='checkbox' label='Yes' name='' value='' checked={formData.discharge.generalAssessment===true} onChange={handleChange} /></Col>
                             </Form.Group>
                         </ListGroup.Item>
                         </ListGroup>

@@ -1,4 +1,4 @@
-form {
+/* form {
     max-width: 800px;
     margin: auto;
     padding: 20px;
@@ -45,4 +45,9 @@ form {
   
   h3 {
     margin-top: 20px;
+  } */
+
+  .dropdown-menu {
+    height: 300px;
+    overflow-y: scroll;
   }

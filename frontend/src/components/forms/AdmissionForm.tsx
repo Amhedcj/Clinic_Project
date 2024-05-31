@@ -1,6 +1,6 @@
 // src/AdmissionForm.js
 import React, { useState } from 'react';
-import { Form, Button, Row, Col, Container, FloatingLabel, InputGroup, ListGroup, ToggleButton } from 'react-bootstrap';
+import { Form, Button, Row, Col, Container, FloatingLabel, InputGroup, ListGroup, ToggleButton, ButtonGroup, DropdownButton, Dropdown } from 'react-bootstrap';
 import ProceduresTable from '../ProceduresTable';
 import PrecautionsTable from '../PrecautionsTable';
 import IntakeOutputTable from '../IntakeOutputTable';
@@ -8,6 +8,8 @@ import FlowSheet from '../FlowSheet';
 import AdmissionData from '../../types/AdmissionData';
 import { setNestedState, setNestedStateArr } from '../../utils/utils';
 import NewPrecautionsTable from '../NewPrecautionsTable';
+import CollapsedRadioGroup from '../CollapsedRadioGroup';
+import './AdmissionForm.css'
 
 const AdmissionForm = () => {
     const [formData, setFormData] = useState(new AdmissionData());
@@ -43,6 +45,8 @@ const AdmissionForm = () => {
             setFormData(setNestedState(structuredClone(formData), 'allergies', ''));
         }
     };
+
+    const [selectedOption, setSelectedOption] = useState('');
 
   return (
     <Container fluid>
@@ -295,7 +299,10 @@ const AdmissionForm = () => {
 
 {/* Flow Sheet Section */}
                         <h2 className='text-center mt-4'>Flow Sheet</h2>
-                        <FlowSheet state={formData} setState={setFormData}/>
+                        <FlowSheet state={formData} setFormProp={setFormProp}/>
+
+      <CollapsedRadioGroup as={Col} xs={12} name='testCollapsedRadioGroup' mainOptions={[{label: '1', value: '1'}, {label: '2', value: '2'}, {label: '3', value: '3'}]} otherOptions={[{label: '4', value: '4'}, {label: '5', value: '5'}, {label: '6', value: '6'}]} otherOptionsDefaultLabel='' state={selectedOption} setState={(x: any)=>setFormProp('', x)} />
+
 
 {/* Progress Notes Section */}
                         <h2 className='text-center mt-4'>Progress Notes</h2>

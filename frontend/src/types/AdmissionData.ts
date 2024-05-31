@@ -194,6 +194,7 @@ export default class AdmissionData {
     discharge: ArrivalDepartureData;
 
     intakeOutput: any[];
+    
     flowSheet: {
         am: FlowSheetData,
         pm: FlowSheetData

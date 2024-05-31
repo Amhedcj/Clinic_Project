@@ -47,7 +47,7 @@ const NewPrecautionsTable = () => {
           </ButtonGroup>
           <ButtonGroup style={buttonGroupStyle}>
             <CheckButton style={flexButtonStyle}>
-              <Badge>U</Badge>&nbsp;Ual
+              <Badge>U</Badge>&nbsp;Universal
             </CheckButton>
             <CheckButton style={flexButtonStyle}>
               <Badge>AT</Badge>&nbsp;Aseptic Technique

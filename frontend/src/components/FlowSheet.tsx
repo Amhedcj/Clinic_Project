@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Form, Button, Row, Col, Container, FloatingLabel, InputGroup, ListGroup, Table, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import RangeSlider from 'react-bootstrap-range-slider';
+import CollapsedRadioGroup from './CollapsedRadioGroup';
+import { setNestedState } from '../utils/utils';
+import AdmissionData from '../types/AdmissionData';
 
-function FlowSheet(props: any) {
+function FlowSheet(props: {state: AdmissionData, setFormProp: Function}) {
     const tableSeparatorStyle: React.CSSProperties = {
         textAlign: 'center',
         fontSize: '1.4rem',
@@ -18,6 +21,8 @@ function FlowSheet(props: any) {
 
     const [sliderValue1, setSliderValue1] = useState(0);
     const [sliderValue2, setSliderValue2] = useState(0);
+
+    const nums = (min: number, max: number) => Array.from({ length: max - min + 1 }, (_, i) => i + min);
 
     return (
         <>
@@ -56,14 +61,14 @@ function FlowSheet(props: any) {
                             <td>Temperature</td>
                             <td>
                                 <InputGroup as={Col} xs={6}>
-                                    <Form.Control type="number" min={96} max={102} name="flowSheet.skin.temperature" />
+                                    <Form.Control type="number" min={96} max={102} name="flowSheet.temperature" />
                                     {/* Later can make this a button that changes and auto-converts the current value from the previous unit to the new unit and vice versa */}
                                     <InputGroup.Text>°F</InputGroup.Text>
                                 </InputGroup>
                             </td>
                             <td>
                                 <InputGroup as={Col} xs={6}>
-                                    <Form.Control type="number" min={96} max={102} name="flowSheet.skin.temperature" />
+                                    <Form.Control type="number" min={96} max={102} name="flowSheet.temperature" />
                                     {/* Later can make this a button that changes and auto-converts the current value from the previous unit to the new unit and vice versa */}
                                     <InputGroup.Text>°F</InputGroup.Text>
                                 </InputGroup>
@@ -171,8 +176,8 @@ function FlowSheet(props: any) {
                                         <RangeSlider
                                             min={3}
                                             max={15}
-                                            value={props.state.levelOfConsciousness_am}
-                                            onChange={(e: any) => props.setState({ ...props.state, levelOfConsciousness_am: e.target.value })}
+                                            value={props.state.flowSheet.am.neurological.levelOfConsciousness}
+                                            onChange={(e: any) => props.setFormProp('flowSheet.am.neurological.levelOfConsciousness', e.target.value)}
                                         />
                                         <InputGroup.Text>15</InputGroup.Text>
                                     </InputGroup>
@@ -185,8 +190,8 @@ function FlowSheet(props: any) {
                                         <RangeSlider
                                             min={3}
                                             max={15}
-                                            value={props.state.levelOfConsciousness_pm}
-                                            onChange={(e: any) => props.setState({ ...props.state, levelOfConsciousness_pm: e.target.value })}
+                                            value={props.state.flowSheet.pm.neurological.levelOfConsciousness}
+                                            onChange={(e: any) => props.setFormProp('flowSheet.pm.neurological.levelOfConsciousness', e.target.value)}
                                         />
                                         <InputGroup.Text>15</InputGroup.Text>
                                     </InputGroup>
@@ -218,7 +223,7 @@ function FlowSheet(props: any) {
                             </td>
                         </tr>
                         <tr>
-                            <td>--Breath sounds</td>
+                            <td>Breath sounds</td>
                             <td>
                                 <Form.Control type="text" />
                             </td>
@@ -282,29 +287,31 @@ function FlowSheet(props: any) {
                         <tr>
                             <td>Peripheral Pulse</td>
                             <td>
-                                <InputGroup as={Col}>
+                                {/* <InputGroup as={Col}>
                                     <Form.Control type="number" />
                                     <OverlayTrigger placement="auto" delay={{ show: 250, hide: 400 }} overlay={renderTooltip('Beats per minute')}>
                                         <InputGroup.Text>BPM</InputGroup.Text>
                                     </OverlayTrigger>
-                                </InputGroup>
+                                </InputGroup> */}
+                                <CollapsedRadioGroup as={Col} xs={12} name='flowsheetAmPeripheralPulseGroup' mainOptions={[{label: 'Present', value: 'present'}, {label: 'Low', value: 'low'}, {label: 'Absent', value: 'absent'}]} state={props.state.flowSheet.am.cardiac.peripheralPulse} setState={(x: any)=>props.setFormProp('flowSheet.am.cardiac.peripheralPulse', x)} />
                             </td>
                             <td>
-                                <InputGroup as={Col}>
+                                {/* <InputGroup as={Col}>
                                     <Form.Control type="number" />
                                     <OverlayTrigger placement="auto" delay={{ show: 250, hide: 400 }} overlay={renderTooltip('Beats per minute')}>
                                         <InputGroup.Text>BPM</InputGroup.Text>
                                     </OverlayTrigger>
-                                </InputGroup>
+                                </InputGroup> */}
+                                <CollapsedRadioGroup as={Col} xs={12} name='flowsheetPmPeripheralPulseGroup' mainOptions={[{label: 'Present', value: 'present'}, {label: 'Low', value: 'low'}, {label: 'Absent', value: 'absent'}]} state={props.state.flowSheet.pm.cardiac.peripheralPulse} setState={(x: any)=>props.setFormProp('flowSheet.pm.cardiac.peripheralPulse', x)} />
                             </td>
                         </tr>
                         <tr>
                             <td>Capillary Refill</td>
                             <td>
-                                <Form.Control type="text" />
+                                <CollapsedRadioGroup as={Col} xs={12} name='flowsheetAmCapillaryRefillGroup' mainOptions={[{label: '< 3s', value: '<3s'}, {label: '> 3s', value: '>3s'}]} state={props.state.flowSheet.am.cardiac.peripheralPulse} setState={(x: any)=>props.setFormProp('flowSheet.am.cardiac.peripheralPulse', x)} />
                             </td>
                             <td>
-                                <Form.Control type="text" />
+                                <CollapsedRadioGroup as={Col} xs={12} name='flowsheetPmCapillaryRefillGroup' mainOptions={[{label: '< 3s', value: '<3s'}, {label: '> 3s', value: '>3s'}]} state={props.state.flowSheet.pm.cardiac.peripheralPulse} setState={(x: any)=>props.setFormProp('flowSheet.pm.cardiac.peripheralPulse', x)} />
                             </td>
                         </tr>
                         <tr>
@@ -390,18 +397,20 @@ function FlowSheet(props: any) {
                         <tr>
                             <td>Temperature</td>
                             <td>
-                                <InputGroup as={Col} xs={6}>
-                                    <Form.Control type="number" min={96} max={102} name="flowSheet.skin.temperature" />
+                                {/* <InputGroup as={Col} xs={6}> */}
+                                    {/* <Form.Control type="number" min={96} max={102} name="flowSheet.skin.temperature" /> */}
                                     {/* Later can make this a button that changes and auto-converts the current value from the previous unit to the new unit and vice versa */}
-                                    <InputGroup.Text>°F</InputGroup.Text>
-                                </InputGroup>
+                                    {/* <InputGroup.Text>°F</InputGroup.Text> */}
+                                {/* </InputGroup> */}
+                                    <CollapsedRadioGroup as={Col} xs={12} name='flowsheetAmSkinTempGroup' mainOptions={[{label: 'Warm', value: 'warm'}, {label: 'Cool', value: 'cool'}, {label: 'Hot', value: 'hot'}]} state={props.state.flowSheet.am.skin.temperature} setState={(x: any)=>props.setFormProp('flowSheet.am.skin.temperature', x)} />
                             </td>
                             <td>
-                                <InputGroup as={Col} xs={6}>
-                                    <Form.Control type="number" min={96} max={102} name="flowSheet.skin.temperature" />
+                                {/* <InputGroup as={Col} xs={6}> */}
+                                    {/* <Form.Control type="number" min={96} max={102} name="flowSheet.skin.temperature" /> */}
                                     {/* Later can make this a button that changes and auto-converts the current value from the previous unit to the new unit and vice versa */}
-                                    <InputGroup.Text>°F</InputGroup.Text>
-                                </InputGroup>
+                                    {/* <InputGroup.Text>°F</InputGroup.Text> */}
+                                {/* </InputGroup> */}
+                                    <CollapsedRadioGroup as={Col} xs={12} name='flowsheetPmSkinTempGroup' mainOptions={[{label: 'Warm', value: 'warm'}, {label: 'Cool', value: 'cool'}, {label: 'Hot', value: 'hot'}]} state={props.state.flowSheet.pm.skin.temperature} setState={(x: any)=>props.setFormProp('flowSheet.pm.skin.temperature', x)} />
                             </td>
                         </tr>
                     </>
@@ -446,10 +455,10 @@ function FlowSheet(props: any) {
                         <tr>
                             <td>Diapers</td>
                             <td>
-                                <Form.Control type="text" />
+                                <CollapsedRadioGroup as={Col} xs={12} name='flowsheetAmDiapersGroup' mainOptions={nums(0, 4).map((x, i) => {return {label: x == 0 ? 'None' : `${x}`, value: `${x}`}})} otherOptions={nums(5, 20).map((x, i) => {return {label: `${x}`, value: `${x}`}})} otherOptionsDefaultLabel='More' state={props.state.flowSheet.am.urinaryOutput.diapers} setState={(x: any)=>props.setFormProp('flowSheet.am.urinaryOutput.diapers', x)} />
                             </td>
                             <td>
-                                <Form.Control type="text" />
+                                <CollapsedRadioGroup as={Col} xs={12} name='flowsheetPmDiapersGroup' mainOptions={nums(0, 4).map((x, i) => {return {label: x == 0 ? 'None' : `${x}`, value: `${x}`}})} otherOptions={nums(5, 20).map((x, i) => {return {label: `${x}`, value: `${x}`}})} otherOptionsDefaultLabel='More' state={props.state.flowSheet.pm.urinaryOutput.diapers} setState={(x: any)=>props.setFormProp('flowSheet.pm.urinaryOutput.diapers', x)} />
                             </td>
                         </tr>
                         <tr>

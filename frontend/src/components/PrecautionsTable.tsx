@@ -110,7 +110,7 @@ function PrecautionsTable() {
 
             {/* <InputGroup size='lg'>
                 <CheckButton as={Col} xs={3}>
-                    Ual
+                    Universal
                 </CheckButton>
                 <CheckButton as={Col} xs={3}>
                     Aseptic Technique
@@ -126,7 +126,7 @@ function PrecautionsTable() {
             <ButtonGroup vertical as={Col} xs={12} className='mb-3'>
                 <ButtonGroup size={size} as={Col} xs={12}>
                     <CheckButton as={Col} xs={3}>
-                        <Badge>U</Badge> Ual
+                        <Badge>U</Badge> Universal
                     </CheckButton>
                     <CheckButton as={Col} xs={3}>
                         <Badge>AT</Badge> Aseptic Technique

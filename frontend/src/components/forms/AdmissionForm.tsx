@@ -22,14 +22,20 @@ const AdmissionForm = () => {
         const { name, value, type, checked, htmlFor } = e.target;
 
         if (type === 'checkbox') {
-            setFormData(setNestedState(structuredClone(formData), name, checked));
+            setFormProp(name, checked);
         }
         else {
-            setFormData(setNestedState(structuredClone(formData), name, value));
+            setFormProp(name, value);
         }
 
         // setFormData(prevState => setNestedState(structuredClone(prevState), name, value));
         // setFormData(prevState => setNestedState({ ...prevState }, name, value));
+    };
+
+    const handleRadioChange = (e: any) => {
+        const { name, value } = e.currentTarget;
+
+        setFormProp(name, value);
     };
 
   const handleSubmit = (e: any) => {
@@ -38,11 +44,11 @@ const AdmissionForm = () => {
   };
 
     const toggleAllergiesNA = () => {
-        if (formData.allergies !== 'N/A') {
-            setFormData(setNestedState(structuredClone(formData), 'allergies', 'N/A'));
+        if (formData.allergies.toLowerCase() !== 'n/a') {
+            setFormProp('allergies', 'N/A');
         }
         else {
-            setFormData(setNestedState(structuredClone(formData), 'allergies', ''));
+            setFormProp('allergies', '');
         }
     };
 
@@ -83,7 +89,7 @@ const AdmissionForm = () => {
                               <InputGroup>
                                   <InputGroup.Text>Allergies</InputGroup.Text>
                                   <Form.Control type='text' name='allergies' value={formData.allergies} onChange={handleChange} />
-                                  <ToggleButton id='toggleAllergiesNA' name='allergiesNA' variant='outline-primary' type='checkbox' value='' checked={formData.allergies === 'N/A'} onChange={toggleAllergiesNA}>N/A</ToggleButton>
+                                  <ToggleButton id='toggleAllergiesNA' name='allergiesNA' variant='outline-primary' type='checkbox' value='' checked={formData.allergies.toLowerCase() === 'n/a'} onChange={toggleAllergiesNA}>N/A</ToggleButton>
                               </InputGroup>
                             </Col>
                         </Form.Group>
@@ -95,14 +101,16 @@ const AdmissionForm = () => {
                         <Container fluid>
 
 {/* Admission */}
+<>
 {/* Date + Time */}
                     <h2>Admission</h2>
                     <Form.Group as={Row}>
-                        <Col xs={'auto'}>
+                        {/* <Col xs={'auto'}>
                             <Form.Label>Arrival:</Form.Label>
-                        </Col>
-                        <Col xs={7}>
+                        </Col> */}
+                        <Col xs={8}>
                             <InputGroup className='mb-3'>
+                                <InputGroup.Text>Arrival:</InputGroup.Text>
                                 <Form.Control type='date' name='arrival.date' value={formData.arrival.date} onChange={handleChange} />
                                 <Form.Control type='time' name='arrival.time' value={formData.arrival.time} onChange={handleChange} />
                                 <Button>Now</Button>
@@ -111,36 +119,56 @@ const AdmissionForm = () => {
                     </Form.Group>
 
 {/* Mode of arrival */}
-                        <Form.Group as={Row} id='' className='mt-3'>
-                            <Col xs={'auto'}><Form.Label>Mode of Arrival:</Form.Label></Col>
+                        <Form.Group as={Row} id='' className='mb-3'>
+                            <InputGroup>
+                                <InputGroup.Text>Mode of Arrival:</InputGroup.Text>
+                                <ToggleButton id='arrivalModeCaregiver' type="radio" variant='outline-primary' name='arrival.mode' value='caregiver' checked={formData.arrival.mode === 'caregiver'} onChange={handleRadioChange/* e=>setFormProp('arrival.mode', e.currentTarget.value) */}>Caregiver</ToggleButton>
+                                <ToggleButton id='arrivalModeTransportation' type="radio" variant='outline-primary' name='arrival.mode' value='transportation' checked={formData.arrival.mode === 'transportation'} onChange={handleRadioChange/* e=>setFormProp('arrival.mode', e.currentTarget.value) */}>Transportation</ToggleButton>
+                                <ToggleButton id='arrivalModeAmbulance' type="radio" variant='outline-primary' name='arrival.mode' value='ambulance' checked={formData.arrival.mode === 'ambulance'} onChange={handleRadioChange/* e=>setFormProp('arrival.mode', e.currentTarget.value) */}>Ambulance</ToggleButton>
+                            </InputGroup>
+                            {/* <Col xs={'auto'}><Form.Label>Mode of Arrival:</Form.Label></Col>
                             <Col xs={'auto'}><Form.Check type='radio' label='Caregiver' name='arrival.mode' value='caregiver' checked={formData.arrival.mode === 'caregiver'} onChange={handleChange} /></Col>
                             <Col xs={'auto'}><Form.Check type='radio' label='Transportation' name='arrival.mode' value='transportation' checked={formData.arrival.mode === 'transportation'} onChange={handleChange} /></Col>
-                            <Col xs={'auto'}><Form.Check type='radio' label='Ambulance' name='arrival.mode' value='ambulance' checked={formData.arrival.mode === 'ambulance'} onChange={handleChange} /></Col>
+                            <Col xs={'auto'}><Form.Check type='radio' label='Ambulance' name='arrival.mode' value='ambulance' checked={formData.arrival.mode === 'ambulance'} onChange={handleChange} /></Col> */}
                         </Form.Group>
 
 {/* Safety Measures */}
                         <ListGroup as='ul'>
                         <ListGroup.Item as='li'>
                             <Form.Group as={Row} id='safetyMeasures'>
-                                <Col xs={'auto'}><Form.Label>Safety Measures in Place:</Form.Label></Col>
-                                <Col xs={'auto'}><Form.Check type='checkbox' label='Car Seat/Seat Belt/Wheelchair' name='arrival.safetyMeasures' value='' checked={formData.arrival.safetyMeasures===true} onChange={handleChange} /></Col>
+                                <ButtonGroup as={Col} xs={8}>
+                                    <ToggleButton id='arrival.safetyMeasures' name='arrival.safetyMeasures' checked={formData.arrival.safetyMeasures===true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>Safety Measures in Place</ToggleButton>
+                                    <ToggleButton id='arrival.carSeatSeatBeltEtc' name='arrival.carSeatSeatBeltEtc' checked={formData.arrival.carSeatSeatBeltEtc===true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>Car Seat/Seat Belt/Wheelchair</ToggleButton>
+                                </ButtonGroup>
+
+                                {/* <Col xs={'auto'}><Form.Label>Safety Measures in Place:</Form.Label></Col>
+                                <Col xs={'auto'}><Form.Check type='checkbox' label='Car Seat/Seat Belt/Wheelchair' name='arrival.safetyMeasures' value='' checked={formData.arrival.safetyMeasures===true} onChange={handleChange} /></Col> */}
                             </Form.Group>
                         </ListGroup.Item>
 
 {/* Patient stable */}
                         <ListGroup.Item as='li'>
-                            <Form.Group as={Row} id='patientStable'>
-                                <Col xs={'auto'}><Form.Label>Patient Stable:</Form.Label></Col>
+                            <Form.Group as={Row} xs={8} id='patientStable'>
+                                <InputGroup>
+                                    <InputGroup.Text>Patient Stable:</InputGroup.Text>
+                                    <ToggleButton id='arrival.patientStability.vsWsl' name='arrival.patientStability.vsWsl' checked={formData.arrival.patientStability.vsWsl===true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>VS WSL</ToggleButton>
+                                    <ToggleButton id='arrival.patientStability.gTubeOrTrach' name='arrival.patientStability.gTubeOrTrach' checked={formData.arrival.patientStability.gTubeOrTrach===true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>G-Tube or Trach tube properly in place</ToggleButton>
+                                </InputGroup>
+                                {/* <Col xs={'auto'}><Form.Label>Patient Stable:</Form.Label></Col>
                                 <Col xs={'auto'}><Form.Check type='checkbox' label='VS WSL' name='arrival.patientStability.vsWsl' value='' checked={formData.arrival.patientStability.vsWsl===true} onChange={handleChange} /></Col>
-                                <Col xs={'auto'}><Form.Check type='checkbox' label='G-Tube or Trach tube properly in place' name='arrival.patientStability.gTubeOrTrach' value='' checked={formData.arrival.patientStability.gTubeOrTrach===true} onChange={handleChange} /></Col>
+                                <Col xs={'auto'}><Form.Check type='checkbox' label='G-Tube or Trach tube properly in place' name='arrival.patientStability.gTubeOrTrach' value='' checked={formData.arrival.patientStability.gTubeOrTrach===true} onChange={handleChange} /></Col> */}
                             </Form.Group>
                         </ListGroup.Item>
 
 {/* General assessment */}
                         <ListGroup.Item as='li'>
                             <Form.Group as={Row} id=''>
-                                <Col xs={'auto'}><Form.Label>General Assessment (Head to Toe) Completed:</Form.Label></Col>
-                                <Col xs={'auto'}><Form.Check type='checkbox' label='Yes' name='arrival.generalAssessment' value='' checked={formData.arrival.generalAssessment===true} onChange={handleChange} /></Col>
+                                <InputGroup>
+                                    <InputGroup.Text>General Assessment (Head to Toe) Completed:</InputGroup.Text>
+                                    <ToggleButton id='arrival.generalAssessment' name='arrival.generalAssessment' checked={formData.arrival.generalAssessment===true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>Yes</ToggleButton>
+                                </InputGroup>
+                                {/* <Col xs={'auto'}><Form.Label>General Assessment (Head to Toe) Completed:</Form.Label></Col>
+                                <Col xs={'auto'}><Form.Check type='checkbox' label='Yes' name='arrival.generalAssessment' value='' checked={formData.arrival.generalAssessment===true} onChange={handleChange} /></Col> */}
                             </Form.Group>
                         </ListGroup.Item>
                         </ListGroup>
@@ -168,6 +196,7 @@ const AdmissionForm = () => {
                             </InputGroup>
                         </Col>
                         </Form.Group>
+</>
 
 {/* Procedure Table */}
                         <h2 className='text-center mt-4'>Procedure</h2>
@@ -212,6 +241,10 @@ const AdmissionForm = () => {
                             <Col xs={'auto'}><Form.Check type='checkbox' label='OT' /></Col>
                             <Col xs={'auto'}><Form.Check type='checkbox' label='ST' /></Col> */}
                         </Form.Group>
+
+{/* Intake/Output Section */}
+<h2 className='text-center mt-4'>Intake/Output</h2>
+                        <IntakeOutputTable />
                         </Container>
                     </Col>
 
@@ -220,8 +253,86 @@ const AdmissionForm = () => {
                         <Container>
 
 {/* Discharge Section */}
+<>
 <h2>Discharge</h2>
-                            <Form.Group as={Row} id='date'>
+<Form.Group as={Row}>
+                                  <Col xs={8}>
+                                      <InputGroup className='mb-3'>
+                                          <InputGroup.Text>Discharge:</InputGroup.Text>
+                                          <Form.Control type='date' name='discharge.date' value={formData.discharge.date} onChange={handleChange} />
+                                          <Form.Control type='time' name='discharge.time' value={formData.discharge.time} onChange={handleChange} />
+                                          <Button>Now</Button>
+                                      </InputGroup>
+                                  </Col>
+                              </Form.Group>
+
+                              {/* Mode of discharge */}
+                              <Form.Group as={Row} id='' className='mb-3'>
+                                  <InputGroup>
+                                      <InputGroup.Text>Mode of Discharge:</InputGroup.Text>
+                                      <ToggleButton id='dischargeModeCaregiver' type="radio" variant='outline-primary' name='discharge.mode' value='caregiver' checked={formData.discharge.mode === 'caregiver'} onChange={handleRadioChange/* e=>setFormProp('discharge.mode', e.currentTarget.value) */}>Caregiver</ToggleButton>
+                                      <ToggleButton id='dischargeModeTransportation' type="radio" variant='outline-primary' name='discharge.mode' value='transportation' checked={formData.discharge.mode === 'transportation'} onChange={handleRadioChange/* e=>setFormProp('discharge.mode', e.currentTarget.value) */}>Transportation</ToggleButton>
+                                      <ToggleButton id='dischargeModeAmbulance' type="radio" variant='outline-primary' name='discharge.mode' value='ambulance' checked={formData.discharge.mode === 'ambulance'} onChange={handleRadioChange/* e=>setFormProp('discharge.mode', e.currentTarget.value) */}>Ambulance</ToggleButton>
+                                  </InputGroup>
+                              </Form.Group>
+
+                              {/* Safety Measures */}
+                              <ListGroup as='ul'>
+                                  <ListGroup.Item as='li'>
+                                      <Form.Group as={Row} id='safetyMeasures'>
+                                          <ButtonGroup as={Col} xs={8}>
+                                              <ToggleButton id='discharge.safetyMeasures' name='discharge.safetyMeasures' checked={formData.discharge.safetyMeasures === true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>Safety Measures in Place</ToggleButton>
+                                              <ToggleButton id='discharge.carSeatSeatBeltEtc' name='discharge.carSeatSeatBeltEtc' checked={formData.discharge.carSeatSeatBeltEtc === true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>Car Seat/Seat Belt/Wheelchair</ToggleButton>
+                                          </ButtonGroup>
+
+                                      </Form.Group>
+                                  </ListGroup.Item>
+
+{/* Patient stable */}
+                                  <ListGroup.Item as='li'>
+                                      <Form.Group as={Row} xs={8} id='patientStable'>
+                                          <InputGroup>
+                                              <InputGroup.Text>Patient Stable:</InputGroup.Text>
+                                              <ToggleButton id='discharge.patientStability.vsWsl' name='discharge.patientStability.vsWsl' checked={formData.discharge.patientStability.vsWsl === true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>VS WSL</ToggleButton>
+                                              <ToggleButton id='discharge.patientStability.gTubeOrTrach' name='discharge.patientStability.gTubeOrTrach' checked={formData.discharge.patientStability.gTubeOrTrach === true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>G-Tube or Trach tube properly in place</ToggleButton>
+                                          </InputGroup>
+                                      </Form.Group>
+                                  </ListGroup.Item>
+
+                                  {/* General assessment */}
+                                  <ListGroup.Item as='li'>
+                                      <Form.Group as={Row} id=''>
+                                          <InputGroup>
+                                              <InputGroup.Text>General Assessment (Head to Toe) Completed:</InputGroup.Text>
+                                              <ToggleButton id='discharge.generalAssessment' name='discharge.generalAssessment' checked={formData.discharge.generalAssessment === true} type='checkbox' value='' variant='outline-primary' onChange={handleChange}>Yes</ToggleButton>
+                                          </InputGroup>
+                                      </Form.Group>
+                                  </ListGroup.Item>
+                              </ListGroup>
+
+                              {/* Additional comments */}
+                              <Form.Group as={Row} id='dischargeAdditionalComments' className='mt-3'>
+                                  <Col xs={12}>
+                                      <FloatingLabel label='Additional comments'>
+                                          <Form.Control as='textarea' rows={3} name='discharge.additionalComments' value={formData.discharge.additionalComments} placeholder='' onChange={handleChange} />
+                                      </FloatingLabel>
+                                  </Col>
+                              </Form.Group>
+
+                              {/* Nurse signature */}
+                              <Form.Group as={Row} id='dischargeNurseSign'>
+                                  <Form.Label column xs={'auto'}>Nurse Sign:</Form.Label>
+                                  <Col xs={12}>
+                                      <InputGroup className='mb-3'>
+                                          <Form.Control disabled type='text' name='discharge.nurseSign.fullName' placeholder='Name' value={formData.discharge.nurseSign.fullName} onChange={handleChange} />
+                                          <Form.Control disabled type='text' name='discharge.nurseSign.nurseID' placeholder='Nurse ID' value={formData.discharge.nurseSign.nurseID} onChange={handleChange} />
+                                          <Button onClick={() => { setFormData(setNestedStateArr(structuredClone(formData), ['discharge.nurseSign.fullName', 'discharge.nurseSign.nurseID'], ['Nurse One', 'N1179087529164932'])); }}>Sign</Button>
+                                      </InputGroup>
+                                  </Col>
+                              </Form.Group>
+
+{/* Old discharge part below vvvvvvvvvvv */}
+                            {/* <Form.Group as={Row} id='date'>
                                 <Col xs={'auto'}>
                                     <Form.Label>Discharge:</Form.Label>
                                 </Col>
@@ -232,57 +343,57 @@ const AdmissionForm = () => {
                                         <Button>Now</Button>
                                     </InputGroup>
                                 </Col>
-                            </Form.Group>
+                            </Form.Group> */}
 
 {/* Mode of discharge */}
-                        <Form.Group as={Row} id='modeOfDischarge' className='mt-3'>
+                        {/* <Form.Group as={Row} id='modeOfDischarge' className='mt-3'>
                             <Col xs={'auto'}><Form.Label>Mode of Discharge:</Form.Label></Col>
                             <Col xs={'auto'}><Form.Check type='radio' label='Caregiver' name='discharge.mode' value='caregiver' checked={formData.discharge.mode==='caregiver'} onChange={handleChange} /></Col>
                             <Col xs={'auto'}><Form.Check type='radio' label='Transportation' name='discharge.mode' value='transportation' checked={formData.discharge.mode==='transportation'} onChange={handleChange} /></Col>
                             <Col xs={'auto'}><Form.Check type='radio' label='Ambulance' name='discharge.mode' value='ambulance' checked={formData.discharge.mode==='ambulance'} onChange={handleChange} /></Col>
-                        </Form.Group>
+                        </Form.Group> */}
 
 {/* Safety Measures */}
-                        <ListGroup as='ul'>
+                        {/* <ListGroup as='ul'>
                         <ListGroup.Item as='li'>
                             <Form.Group as={Row} id='safetyMeasures'>
                                 <Col xs={'auto'}><Form.Label>Safety Measures in Place:</Form.Label></Col>
                                 <Col xs={'auto'}><Form.Check type='checkbox' label='Car Seat/Seat Belt/Wheelchair' name='discharge.safetyMeasures' value='true' checked={formData.discharge.safetyMeasures===true} onChange={handleChange} /></Col>
                             </Form.Group>
-                        </ListGroup.Item>
+                        </ListGroup.Item> */}
 
 {/* Patient stable */}
-                        <ListGroup.Item as='li'>
+                        {/* <ListGroup.Item as='li'>
                             <Form.Group as={Row} id='patientStable'>
                                 <Col xs={'auto'}><Form.Label>Patient Stable:</Form.Label></Col>
                                 <Col xs={'auto'}><Form.Check type='checkbox' label='VS WSL' name='' value='' checked={formData.discharge.patientStability.vsWsl===true} onChange={handleChange} /></Col>
                                 <Col xs={'auto'}><Form.Check type='checkbox' label='G-Tube or Trach tube properly in place' name='' value='' checked={formData.discharge.patientStability.gTubeOrTrach===true} onChange={handleChange} /></Col>
                             </Form.Group>
-                        </ListGroup.Item>
+                        </ListGroup.Item> */}
 
 {/* General assessment */}
-                        <ListGroup.Item as='li'>
+                        {/* <ListGroup.Item as='li'>
                             <Form.Group as={Row} id='patientStable'>
                                 <Col xs={'auto'}><Form.Label>General Assessment (Head to Toe) Completed:</Form.Label></Col>
                                 <Col xs={'auto'}><Form.Check type='checkbox' label='Yes' name='' value='' checked={formData.discharge.generalAssessment===true} onChange={handleChange} /></Col>
                             </Form.Group>
                         </ListGroup.Item>
-                        </ListGroup>
+                        </ListGroup> */}
 
 {/* Additional comments */}
-                        <Form.Group as={Row} id='additionalComments' className='mt-3'>
+                        {/* <Form.Group as={Row} id='additionalComments' className='mt-3'> */}
                             {/* <Row xs={'auto'}>
                                 <Form.Label>Additional Comments:</Form.Label>
                             </Row> */}
-                            <Col xs={12}>
+                            {/* <Col xs={12}>
                                 <FloatingLabel label='Additional comments'>
                                     <Form.Control as='textarea' rows={3} placeholder='' name='additionalComments' value={formData.discharge.additionalComments} onChange={handleChange} />
                                 </FloatingLabel>
                             </Col>
-                        </Form.Group>
+                        </Form.Group> */}
 
 {/* Nurse signature */}
-                        <Form.Group as={Row} id='nurseSign'>
+                        {/* <Form.Group as={Row} id='nurseSign'>
                             <Form.Label column xs={'auto'}>Nurse Sign:</Form.Label>
                         <Col xs={12}>
                             <InputGroup className='mb-3'>
@@ -291,17 +402,14 @@ const AdmissionForm = () => {
                                 <Button>Sign</Button>
                             </InputGroup>
                         </Col>
-                        </Form.Group>
-
-{/* Intake/Output Section */}
-                        <h2 className='text-center mt-4'>Intake/Output</h2>
-                        <IntakeOutputTable />
+                        </Form.Group> */}
+</>
 
 {/* Flow Sheet Section */}
                         <h2 className='text-center mt-4'>Flow Sheet</h2>
                         <FlowSheet state={formData} setFormProp={setFormProp}/>
 
-      <CollapsedRadioGroup as={Col} xs={12} name='testCollapsedRadioGroup' mainOptions={[{label: '1', value: '1'}, {label: '2', value: '2'}, {label: '3', value: '3'}]} otherOptions={[{label: '4', value: '4'}, {label: '5', value: '5'}, {label: '6', value: '6'}]} otherOptionsDefaultLabel='' state={selectedOption} setState={(x: any)=>setFormProp('', x)} />
+      <CollapsedRadioGroup as={Col} xs={12} name='testCollapsedRadioGroup' options={[{label: '1', value: '1'}, {label: '2', value: '2'}, {label: '3', value: '3'}]} otherOptions={[{label: '4', value: '4'}, {label: '5', value: '5'}, {label: '6', value: '6'}]} dropdownDefaultLabel='' state={selectedOption} setState={(x: any)=>setFormProp('', x)} />
 
 
 {/* Progress Notes Section */}

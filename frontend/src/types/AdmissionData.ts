@@ -2,8 +2,9 @@ interface ArrivalDepartureData
 {
     date: any;
     time: any;
-    mode: 'caregiver' | 'transportation' | 'ambulance' | undefined
+    mode: 'caregiver' | 'transportation' | 'ambulance' | undefined;
     safetyMeasures: boolean;
+    carSeatSeatBeltEtc: boolean;
 
     patientStability: {
         vsWsl: boolean;
@@ -218,6 +219,7 @@ export default class AdmissionData {
             time: undefined,
             mode: undefined,
             safetyMeasures: false,
+            carSeatSeatBeltEtc: false,
 
             patientStability: {
                 vsWsl: false,
@@ -233,14 +235,6 @@ export default class AdmissionData {
             }
         };
         
-        // this.arrivalTime = undefined;
-        // this.modeOfArrival = undefined;
-        // this.safetyMeasures = undefined;
-        // this.patientStable = undefined;
-        // this.gTubeOrTrach = undefined;
-        // this.generalAssessment = undefined;
-        // this.additionalComments = undefined;
-        // this.nurseSign = undefined;
         this.procedures = [new Procedure()] as Procedure[];
         this.medications = {
             mdOrder: false,
@@ -265,6 +259,7 @@ export default class AdmissionData {
             time: undefined,
             mode: undefined,
             safetyMeasures: false,
+            carSeatSeatBeltEtc: false,
 
             patientStability: {
                 vsWsl: false,

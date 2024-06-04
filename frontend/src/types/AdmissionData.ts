@@ -168,7 +168,7 @@ export class FlowSheetData {
 }
 
 export default class AdmissionData {
-    testBool: boolean;
+    invalidSubmit: boolean;
 
     patientFirstName: string;
     patientLastName: string;
@@ -243,7 +243,7 @@ export default class AdmissionData {
         
         this.otherComments = undefined;
 
-        this.testBool = false;
+        this.invalidSubmit = false;
 
         this.therapies = {
             pt: false,

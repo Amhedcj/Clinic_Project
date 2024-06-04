@@ -40,7 +40,15 @@ const AdmissionForm = () => {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
+
         console.log(formData);
+
+        if(!formData.discharge.mode || formData.discharge.mode?.length == 0) {
+            setFormProp('invalidSubmit', true);
+        }
+        else {
+            setFormProp('invalidSubmit', false);
+        }
     };
 
     const toggleAllergiesNA = () => {
@@ -54,7 +62,7 @@ const AdmissionForm = () => {
 
   return (
     <Container fluid>
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit} noValidate /* validated={true} onInvalid={()=>alert('invalid form data, reporting now')} */>
                 <Button type='submit'>Submit</Button>
                 <Row>
                     <Col xs={12}>
@@ -109,7 +117,7 @@ const AdmissionForm = () => {
                         <Col xs={8}>
                             <InputGroup className='mb-3'>
                                 <InputGroup.Text>Arrival:</InputGroup.Text>
-                                <Form.Control type='date' name='arrival.date' value={formData.arrival.date} onChange={handleChange} />
+                                <Form.Control type='date' name='arrival.date' value={formData.arrival.date} onChange={handleChange} isInvalid={(formData.arrival.date || '2024').split('-')[0] >= '2024'} />
                                 <Form.Control type='time' name='arrival.time' value={formData.arrival.time} onChange={handleChange} />
                                 <Button>Now</Button>
                             </InputGroup>
@@ -266,11 +274,11 @@ const AdmissionForm = () => {
 
                               {/* Mode of discharge */}
                               <Form.Group as={Row} id='' className='mb-3'>
-                                  <InputGroup>
-                                      <InputGroup.Text>Mode of Discharge:</InputGroup.Text>
-                                      <ToggleButton id='dischargeModeCaregiver' type="radio" variant='outline-primary' name='discharge.mode' value='caregiver' checked={formData.discharge.mode === 'caregiver'} onChange={handleRadioChange/* e=>setFormProp('discharge.mode', e.currentTarget.value) */}>Caregiver</ToggleButton>
-                                      <ToggleButton id='dischargeModeTransportation' type="radio" variant='outline-primary' name='discharge.mode' value='transportation' checked={formData.discharge.mode === 'transportation'} onChange={handleRadioChange/* e=>setFormProp('discharge.mode', e.currentTarget.value) */}>Transportation</ToggleButton>
-                                      <ToggleButton id='dischargeModeAmbulance' type="radio" variant='outline-primary' name='discharge.mode' value='ambulance' checked={formData.discharge.mode === 'ambulance'} onChange={handleRadioChange/* e=>setFormProp('discharge.mode', e.currentTarget.value) */}>Ambulance</ToggleButton>
+                                  <InputGroup hasValidation>
+                                      <InputGroup.Text style={(!formData.invalidSubmit || (formData.discharge.mode?.length || 0) > 0) ? {} : {color: 'var(--bs-danger)', borderColor: 'var(--bs-danger)'}}>Mode of Discharge:</InputGroup.Text>
+                                      <ToggleButton id='dischargeModeCaregiver' type="radio" variant={(!formData.invalidSubmit || (formData.discharge.mode?.length || 0) > 0) ? 'outline-primary' : 'outline-danger'} name='discharge.mode' value='caregiver' checked={formData.discharge.mode === 'caregiver'} onChange={handleRadioChange/* e=>setFormProp('discharge.mode', e.currentTarget.value) */}>Caregiver</ToggleButton>
+                                      <ToggleButton id='dischargeModeTransportation' type="radio" variant={(!formData.invalidSubmit || (formData.discharge.mode?.length || 0) > 0) ? 'outline-primary' : 'outline-danger'} name='discharge.mode' value='transportation' checked={formData.discharge.mode === 'transportation'} onChange={handleRadioChange/* e=>setFormProp('discharge.mode', e.currentTarget.value) */}>Transportation</ToggleButton>
+                                      <ToggleButton id='dischargeModeAmbulance' type="radio" variant={(!formData.invalidSubmit || (formData.discharge.mode?.length || 0) > 0) ? 'outline-primary' : 'outline-danger'} name='discharge.mode' value='ambulance' checked={formData.discharge.mode === 'ambulance'} onChange={handleRadioChange/* e=>setFormProp('discharge.mode', e.currentTarget.value) */}>Ambulance</ToggleButton>
                                   </InputGroup>
                               </Form.Group>
 

@@ -1,5 +1,5 @@
 import Table from 'react-bootstrap/Table';
-import { Form, Button, Row, Col, Container, FloatingLabel, InputGroup, ListGroup } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
 import { useState } from 'react';
 import AdmissionData, { Procedure } from '../types/AdmissionData';
 import { setNestedState } from '../utils/utils';
@@ -13,7 +13,7 @@ function ProceduresTable(props: any) {
         
         for(let i = 0; i < data.length; i++)
         {
-            if(i != idx)
+            if(i !== idx)
             {
                 newData.push(data[i]);
             }
@@ -23,7 +23,7 @@ function ProceduresTable(props: any) {
     };
 
     const handleProcedureChange = (e: any, idx: number) => {
-        const { name, value, type, checked } = e.target;
+        const { name, value } = e.target;
 
         const newProcedures = [...procedures];
         const newProcedure = structuredClone(procedures[idx]);

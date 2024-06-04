@@ -1,6 +1,7 @@
 import Table from 'react-bootstrap/Table';
 import { Form, Button, Row, Col, Container, FloatingLabel, InputGroup, ListGroup, Badge, ButtonGroup, ToggleButton } from 'react-bootstrap';
 import { useState } from 'react';
+import CheckButton from './CheckButton';
 
 function PrecautionsTable() {
     const [data, setData] = useState([{ procedure: '0' as String }]);
@@ -20,15 +21,15 @@ function PrecautionsTable() {
         return newData;
     };
 
-    const CheckButton = (props: any) => {
-        const [b, setB] = useState(false);
+    // const CheckButton = (props: any) => {
+    //     const [b, setB] = useState(false);
 
-        return (
-            <ToggleButton id='' type='checkbox' value='' checked={b} onClick={() => { setB(!b) }} variant='outline-primary'>
-                {props.children}
-            </ToggleButton>
-        );
-    };
+    //     return (
+    //         <ToggleButton id='' type='checkbox' value='' checked={b} onClick={() => { setB(!b) }} variant='outline-primary'>
+    //             {props.children}
+    //         </ToggleButton>
+    //     );
+    // };
 
     const buttonGroupStyle: any = {
         display: 'flex',

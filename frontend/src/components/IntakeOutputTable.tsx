@@ -1,5 +1,5 @@
 import Table from 'react-bootstrap/Table';
-import { Form, Button, Row, Col, Container, FloatingLabel, InputGroup, ListGroup } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
 import { useState } from 'react';
 
 function IntakeOutputTable() {
@@ -11,7 +11,7 @@ function IntakeOutputTable() {
         
         for(let i = 0; i < data.length; i++)
         {
-            if(i != idx)
+            if(i !== idx)
             {
                 newData.push(data[i]);
             }

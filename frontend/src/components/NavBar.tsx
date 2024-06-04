@@ -1,7 +1,9 @@
-import React from 'react'
-import { Navbar, Container, Nav, NavDropdown, Button, Form } from 'react-bootstrap'
+import React, { useState } from 'react'
+import { Navbar, Container, Nav, NavDropdown, Form } from 'react-bootstrap'
 
 function NavBar() {
+    const [darkMode, setDarkMode] = useState(document.documentElement.getAttribute('data-bs-theme'));
+
     return (
         <Navbar expand="lg" className="bg-body-tertiary">
             <Container>
@@ -25,16 +27,18 @@ function NavBar() {
                     </Nav>
                 </Navbar.Collapse>
                 <Form.Switch label='Dark mode'
+                checked={darkMode === 'dark'}
                 onChange={(e: any) => {
                     // if(document.documentElement.getAttribute('data-bs-theme') == 'dark') {
-                    if(e.target.checked == false) {
+                    if(e.target.checked === false) {
                         document.documentElement.setAttribute('data-bs-theme', 'light')
+                        setDarkMode('light');
                     }
                     else {
-                        document.documentElement.setAttribute('data-bs-theme', 'dark')
+                        document.documentElement.setAttribute('data-bs-theme', 'dark');
+                        setDarkMode('dark');
                     }
                 }}>
-                    
                 </Form.Switch>
             </Container>
         </Navbar>

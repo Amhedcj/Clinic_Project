@@ -1,15 +1,15 @@
 // src/AdmissionForm.js
 import React, { useState } from 'react';
-import { Form, Button, Row, Col, Container, FloatingLabel, InputGroup, ListGroup, ToggleButton, ButtonGroup, DropdownButton, Dropdown } from 'react-bootstrap';
+import { Form, Button, Row, Col, Container, FloatingLabel, InputGroup, ListGroup, ToggleButton, ButtonGroup } from 'react-bootstrap';
 import ProceduresTable from '../ProceduresTable';
-import PrecautionsTable from '../PrecautionsTable';
+// import PrecautionsTable from '../PrecautionsTable';
+import NewPrecautionsTable from '../NewPrecautionsTable';
 import IntakeOutputTable from '../IntakeOutputTable';
 import FlowSheet from '../FlowSheet';
 import AdmissionData from '../../types/AdmissionData';
 import { setNestedState, setNestedStateArr } from '../../utils/utils';
-import NewPrecautionsTable from '../NewPrecautionsTable';
-import CollapsedRadioGroup from '../CollapsedRadioGroup';
 import './AdmissionForm.css'
+import ProgressNotes from '../ProgressNotes';
 
 const AdmissionForm = () => {
     const [formData, setFormData] = useState(new AdmissionData());
@@ -19,7 +19,7 @@ const AdmissionForm = () => {
     }
 
     const handleChange = (e: any) => {
-        const { name, value, type, checked, htmlFor } = e.target;
+        const { name, value, type, checked } = e.target;
 
         if (type === 'checkbox') {
             setFormProp(name, checked);
@@ -38,10 +38,10 @@ const AdmissionForm = () => {
         setFormProp(name, value);
     };
 
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-    console.log(formData);
-  };
+    const handleSubmit = (e: any) => {
+        e.preventDefault();
+        console.log(formData);
+    };
 
     const toggleAllergiesNA = () => {
         if (formData.allergies.toLowerCase() !== 'n/a') {
@@ -51,8 +51,6 @@ const AdmissionForm = () => {
             setFormProp('allergies', '');
         }
     };
-
-    const [selectedOption, setSelectedOption] = useState('');
 
   return (
     <Container fluid>
@@ -407,43 +405,23 @@ const AdmissionForm = () => {
 
 {/* Flow Sheet Section */}
                         <h2 className='text-center mt-4'>Flow Sheet</h2>
-                        <FlowSheet state={formData} setFormProp={setFormProp}/>
+                        <FlowSheet state={formData} setFormProp={setFormProp} />
 
-      <CollapsedRadioGroup as={Col} xs={12} name='testCollapsedRadioGroup' options={[{label: '1', value: '1'}, {label: '2', value: '2'}, {label: '3', value: '3'}]} otherOptions={[{label: '4', value: '4'}, {label: '5', value: '5'}, {label: '6', value: '6'}]} dropdownDefaultLabel='' state={selectedOption} setState={(x: any)=>setFormProp('', x)} />
-
-
-{/* Progress Notes Section */}
-                        <h2 className='text-center mt-4'>Progress Notes</h2>
-                        <Form.Group as={Row} id='progressNotes.date'>
-                        <Form.Label column sm='2'>Date:</Form.Label>
-                        <Col sm='10'>
-                            <Form.Control type='date' name='progressNotes.date' value={formData.progressNotes?.date} onChange={handleChange} />
-                        </Col>
-                        </Form.Group>
-                        <Form.Group as={Row} id='progressNotes.time'>
-                        <Form.Label column sm='2'>Time:</Form.Label>
-                        <Col sm='10'>
-                            <Form.Control type='text' name='progressNotes.time' value={formData.progressNotes?.time} onChange={handleChange} />
-                        </Col>
-                        </Form.Group>
-                        <Form.Group as={Row} id='progressNotes.notes'>
-                        <Form.Label column sm='2'>Notes:</Form.Label>
-                        <Col sm='10'>
-                            <Form.Control as='textarea' rows={5} name='progressNotes.notes' value={formData.progressNotes?.notes} onChange={handleChange} />
-                        </Col>
-                        </Form.Group>
-                        <Form.Group as={Row} id='progressNotes.nurseSignature'>
-                        <Form.Label column sm='2'>Nurse Signature:</Form.Label>
-                        <Col sm='10'>
-                            <Form.Control type='text' name='progressNotes.nurseSignature' value={formData.progressNotes?.nurseSignature} onChange={handleChange} />
-                        </Col>
-                        </Form.Group>
-
-                        <Button variant='primary' type='submit' className='mt-4'>
-                        Submit
-                        </Button>
+                        <Button variant='primary' type='submit' className='mt-4'>Submit</Button>
                         </Container>
                     </Col>
+
+{/* Progress Notes Section */}
+                <Container>
+                    <Row className="justify-content-center">
+                    <Col xs={10}>
+                        <br />
+                        <br />
+                        <br />
+                    <ProgressNotes state={formData} setFormProp={setFormProp} />
+                    </Col>
+                    </Row>
+                </Container>
                 </Row>
             </Form>
     </Container>

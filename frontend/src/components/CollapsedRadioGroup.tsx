@@ -1,6 +1,5 @@
 import React from 'react'
-import { ButtonGroup, ToggleButton, DropdownButton, Dropdown, ButtonGroupProps, Row, Col, ColProps } from 'react-bootstrap'
-import { ButtonVariant } from 'react-bootstrap/esm/types';
+import { ButtonGroup, ToggleButton, DropdownButton, Dropdown, ButtonGroupProps, ColProps } from 'react-bootstrap'
 
 type CollapsedRadioGroupProps = ButtonGroupProps & ColProps & {
     name: string;
@@ -30,7 +29,7 @@ function CollapsedRadioGroup(props: CollapsedRadioGroupProps) {
         if(getOtherOptions()?.map(x => x.value).includes(props.state)) {
             // Try to find the matching label for the current props.state value...
             for(const x of getOtherOptions()) {
-                if(x.value == props.state) {
+                if(x.value === props.state) {
                     return x.label;
                 }
             }

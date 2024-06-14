@@ -5,3 +5,4 @@ const instance = axios.create({
 });
 
 export default instance;
+//npm install openai@^4.0.0
